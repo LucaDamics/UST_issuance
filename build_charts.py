@@ -249,6 +249,7 @@ th:first-child,td:first-child{text-align:left}
 th{color:var(--muted);font-weight:500}
 .tblwrap{overflow-x:auto}
 .facets{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.facets.two{grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
 .facet h3{font-size:13.5px;font-weight:600;margin:0 0 4px;color:var(--ink-2)}
 .note{font-size:12.5px;color:var(--muted);margin-top:10px}
 footer{margin-top:36px;font-size:13px;color:var(--muted)}
@@ -337,7 +338,7 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   touch, daily cash aggregates straight to the CBO number; the visible gaps are the accrual items
   (net interest, Social Security premium withholding) and the netted misc. receipts.</p>
   <div class="legend" id="lg-pairs"></div>
-  <div class="facets" id="ch-pairs"></div>
+  <div class="facets two" id="ch-pairs"></div>
   <details><summary>Data table</summary><div class="tblwrap" id="tb-pairs"></div></details>
 </div>
 
@@ -410,7 +411,7 @@ function lineChart(hostId,{months,series,height=280,yfmt=fmtB,endLabels=true}){
   const host=document.getElementById(hostId); host.innerHTML="";
   const W=host.clientWidth||960, H=height, m={t:14,r:endLabels?70:16,b:26,l:52};
   const iw=W-m.l-m.r, ih=H-m.t-m.b;
-  const all=series.flatMap(s=>s.values).filter(v=>v!=null);
+  const all=series.flatMap(s=>s.values).filter(v=>v!=null && !Number.isNaN(v));
   let lo=Math.min(0,...all), hi=Math.max(0,...all); const pad=(hi-lo)*.06; lo-=pad; hi+=pad;
   const x=i=>m.l+iw*(months.length<2?0.5:i/(months.length-1));
   const y=v=>m.t+ih*(1-(v-lo)/(hi-lo));
@@ -424,20 +425,24 @@ function lineChart(hostId,{months,series,height=280,yfmt=fmtB,endLabels=true}){
   months.forEach((mm,i)=>{ if(i%step===0 && x(i)<W-m.r-30){
     const lb=svgEl("text",{x:x(i),y:H-8,"text-anchor":"middle",fill:css("--muted"),"font-size":11});
     lb.textContent=mLab(mm); svg.appendChild(lb); }});
+  const lastIdx=s=>{ for(let i=s.values.length-1;i>=0;i--) if(s.values[i]!=null) return i; return -1; };
   series.forEach(s=>{
-    const d=s.values.map((v,i)=>(i? "L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)).join(" ");
-    svg.appendChild(svgEl("path",{d,fill:"none",stroke:css(s.color),"stroke-width":2,
-      "stroke-linejoin":"round","stroke-linecap":"round"}));
-    const li=s.values.length-1;
-    svg.appendChild(svgEl("circle",{cx:x(li),cy:y(s.values[li]),r:4,fill:css(s.color),
+    let d="", pen=false;
+    s.values.forEach((v,i)=>{ if(v==null){pen=false;return;}
+      d+=(pen?"L":"M")+x(i).toFixed(1)+" "+y(v).toFixed(1)+" "; pen=true; });
+    svg.appendChild(svgEl("path",{d:d.trim(),fill:"none",stroke:css(s.color),"stroke-width":2,
+      "stroke-linejoin":"round","stroke-linecap":"round","stroke-dasharray":s.dashed?"5 5":"none"}));
+    const li=lastIdx(s);
+    if(li>=0) svg.appendChild(svgEl("circle",{cx:x(li),cy:y(s.values[li]),r:4,fill:css(s.color),
       stroke:css("--surface"),"stroke-width":2}));
   });
   // direct end labels only when they don't collide; otherwise the legend carries identity
   if(endLabels){
-    const ends=series.map(s=>y(s.values[s.values.length-1])).sort((a,b)=>a-b);
+    const ends=series.map(s=>{const li=lastIdx(s); return li<0?null:y(s.values[li]);})
+      .filter(v=>v!=null).sort((a,b)=>a-b);
     const collide=ends.some((v,i)=>i&&v-ends[i-1]<13);
     if(!collide) series.forEach(s=>{
-      const li=s.values.length-1;
+      const li=lastIdx(s); if(li<0) return;
       const lb=svgEl("text",{x:x(li)+8,y:y(s.values[li])+4,fill:css("--ink-2"),"font-size":11.5});
       lb.textContent=s.name; svg.appendChild(lb);
     });
@@ -451,10 +456,12 @@ function lineChart(hostId,{months,series,height=280,yfmt=fmtB,endLabels=true}){
     const r=svg.getBoundingClientRect(), px=(ev.clientX-r.left)*(W/r.width);
     const i=Math.max(0,Math.min(months.length-1,Math.round((px-m.l)/(iw/(months.length-1)))));
     cross.setAttribute("x1",x(i)); cross.setAttribute("x2",x(i)); cross.setAttribute("visibility","visible");
-    series.forEach((s,k)=>{ dots[k].setAttribute("cx",x(i)); dots[k].setAttribute("cy",y(s.values[i]));
+    series.forEach((s,k)=>{ const v=s.values[i];
+      if(v==null){ dots[k].setAttribute("visibility","hidden"); return; }
+      dots[k].setAttribute("cx",x(i)); dots[k].setAttribute("cy",y(v));
       dots[k].setAttribute("visibility","visible"); });
     tip.show(`<div class="t">${mLab(months[i])}</div>`+series.map(s=>
-      `<div class="r"><span>${s.name}</span><b>${yfmt(s.values[i])}</b></div>`).join(""),
+      `<div class="r"><span>${s.name}</span><b>${s.values[i]==null?"\\u2013":yfmt(s.values[i])}</b></div>`).join(""),
       (ev.clientX-r.left),(ev.clientY-r.top));
   });
   svg.addEventListener("mouseleave",()=>{ cross.setAttribute("visibility","hidden");
@@ -537,6 +544,41 @@ function hbarChart(hostId,{rows,valueKey,noteKey,labelKey,dotKey=null,height=nul
   host.appendChild(svg);
 }
 
+// ---- dumbbell: DTS-built vs CBO actual levels per category ----
+function dumbbell(hostId,{rows}){
+  const host=document.getElementById(hostId); host.innerHTML="";
+  const W=host.clientWidth||460, rh=30, m={t:8,r:24,b:28,l:150};
+  const H=m.t+m.b+rows.length*rh, iw=W-m.l-m.r;
+  const vals=rows.flatMap(r=>[r.dts,r.cbo]);
+  let lo=Math.min(0,...vals), hi=Math.max(...vals); const pad=(hi-lo)*.08; hi+=pad; lo=Math.min(0,lo-pad);
+  const x=v=>m.l+iw*(v-lo)/(hi-lo);
+  const svg=svgEl("svg",{viewBox:`0 0 ${W} ${H}`,width:W,height:H});
+  niceTicks(lo,hi,4).forEach(t=>{
+    svg.appendChild(svgEl("line",{x1:x(t),x2:x(t),y1:m.t,y2:H-m.b,stroke:css(t===0?"--axis":"--grid"),"stroke-width":1}));
+    const lb=svgEl("text",{x:x(t),y:H-10,"text-anchor":"middle",fill:css("--muted"),
+      "font-size":11,style:"font-variant-numeric:tabular-nums"}); lb.textContent=fmt(t); svg.appendChild(lb);
+  });
+  const tip=tooltip(host);
+  rows.forEach((r,i)=>{
+    const cy=m.t+i*rh+rh/2;
+    const lb=svgEl("text",{x:m.l-10,y:cy+4,"text-anchor":"end",fill:css("--ink-2"),"font-size":12.5});
+    lb.textContent=r.category; svg.appendChild(lb);
+    svg.appendChild(svgEl("line",{x1:x(r.cbo),x2:x(r.dts),y1:cy,y2:cy,stroke:css("--axis"),"stroke-width":2}));
+    svg.appendChild(svgEl("circle",{cx:x(r.cbo),cy,r:5,fill:css("--s3"),stroke:css("--surface"),"stroke-width":2}));
+    svg.appendChild(svgEl("circle",{cx:x(r.dts),cy,r:5,fill:css("--s1"),stroke:css("--surface"),"stroke-width":2}));
+    const hit=svgEl("rect",{x:m.l,y:cy-rh/2,width:iw,height:rh,fill:"transparent"});
+    hit.addEventListener("mousemove",ev=>{ const rc=host.getBoundingClientRect();
+      tip.show(`<div class="t">${r.category}</div>`+
+        `<div class="r"><span>DTS-built</span><b>${fmtB(r.dts)}</b></div>`+
+        `<div class="r"><span>CBO actual</span><b>${fmtB(r.cbo)}</b></div>`+
+        `<div class="r"><span>gap</span><b>${(r.pct<0?"\\u2212":"+")+Math.abs(r.pct).toFixed(1)}%</b></div>`,
+        ev.clientX-rc.left,ev.clientY-rc.top); });
+    hit.addEventListener("mouseleave",()=>tip.hide());
+    svg.appendChild(hit);
+  });
+  host.appendChild(svg);
+}
+
 function legend(id,keys){
   document.getElementById(id).innerHTML=keys.map(k=>
     `<span class="key"><span class="${k.shape||'sw'}" style="background:var(${k.color})"></span>${k.name}</span>`).join("");
@@ -591,6 +633,31 @@ function drawAll(){
     {name:"HHS",color:"--s2",values:D.mirror.hhs}],height:230});
   table("tb-mir",["Month","SSA wedge $bn","HHS wedge $bn"],
     D.mirror.months.map((mm,i)=>[mLab(mm),fmt(D.mirror.ssa[i]),fmt(D.mirror.hhs[i])]));
+
+  legend("lg-pairs",[{name:"DTS-built",color:"--s1",shape:"sq"},
+    {name:"CBO actual",color:"--s3",shape:"sq"}]);
+  const pr=document.getElementById("ch-pairs"); pr.innerHTML="";
+  [["2024","majors","FY2024 \\u2014 large categories"],["2024","minors","FY2024 \\u2014 smaller categories"],
+   ["2025","majors","FY2025 \\u2014 large categories"],["2025","minors","FY2025 \\u2014 smaller categories"]]
+    .forEach(([fy,part,title])=>{
+      const d=document.createElement("div"); d.className="facet";
+      d.innerHTML=`<h3>${title}</h3><div class="chart" id="pb-${fy}-${part}"></div>`;
+      pr.appendChild(d);
+    });
+  ["2024","2025"].forEach(fy=>["majors","minors"].forEach(part=>
+    dumbbell(`pb-${fy}-${part}`,{rows:DATA.cbopairs[fy][part]})));
+  table("tb-pairs",["Category","FY","DTS-built $bn","CBO actual $bn","Gap"],
+    ["2024","2025"].flatMap(fy=>DATA.cbopairs[fy].majors.concat(DATA.cbopairs[fy].minors)
+      .map(r=>[r.category,fy,fmt(r.dts),fmt(r.cbo),(r.pct<0?"\\u2212":"+")+Math.abs(r.pct).toFixed(1)+"%"])));
+
+  legend("lg-f26",[{name:"Projected: CBO annual \\u00d7 DTS seasonality",color:"--s3"},
+    {name:"Actual (MTS)",color:"--s2"}]);
+  lineChart("ch-f26",{months:D.fy26.months,series:[
+    {name:"Projected",color:"--s3",values:D.fy26.proj,dashed:true},
+    {name:"Actual",color:"--s2",values:D.fy26.actual}],height:280});
+  table("tb-f26",["Month","Projected deficit $bn","Actual (MTS) $bn"],
+    D.fy26.months.map((mm,i)=>[mLab(mm),fmt(D.fy26.proj[i]),
+      D.fy26.actual[i]==null?"\\u2013":fmt(D.fy26.actual[i])]));
 
   legend("lg-cbo",[{name:"DTS-built vs CBO",color:"--div-neg",shape:"sq"},
     {name:"MTS vs CBO",color:"--s2",shape:"sq"}]);

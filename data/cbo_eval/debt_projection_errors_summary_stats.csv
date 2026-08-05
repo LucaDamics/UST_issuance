@@ -1,0 +1,12 @@
+component,category,subcategory,projected_year_number,projection_year_range,number_of_projections,average_error,average_absolute_error,RMSE,two_thirds_spread
+debt,Total,Total,1,1984-2025,42,0.1,0.8,1.1,1.4
+debt,Total,Total,2,1985-2025,41,0.1,1.9,2.6,4.3
+debt,Total,Total,3,1986-2025,40,0.0,3.1,4.1,7.3
+debt,Total,Total,4,1987-2025,39,0.0,4.3,5.4,10.4
+debt,Total,Total,5,1988-2025,38,0.1,5.4,6.8,13.3
+debt,Total,Total,6,1989-2025,37,0.3,6.6,8.3,17.4
+debt,Total,Total,7,2002-2025,24,2.0,6.7,8.7,13.2
+debt,Total,Total,8,2003-2025,23,2.4,8.4,10.2,16.9
+debt,Total,Total,9,2004-2025,22,2.9,9.9,11.9,19.1
+debt,Total,Total,10,2005-2025,21,3.3,11.2,13.6,22.0
+debt,Total,Total,11,2006-2025,20,3.9,12.3,15.5,28.8
