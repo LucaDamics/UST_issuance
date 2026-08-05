@@ -113,6 +113,91 @@ def project_fy2026(prof):
     return pd.DataFrame({"proj_receipts": rec, "proj_outlays": out, "proj_deficit": out - rec})
 
 
+# ---------------------------------------------------------------------------
+# Payment-calendar rule (v2.1)
+#
+# Benefit streams paid on the 1st of the month (SSI, VA compensation, military
+# active-duty pay, Medicare Advantage / Part D capitation) are paid on the last
+# business day of the PRIOR month when the 1st falls on a weekend - or on Labor
+# Day, the one floating holiday that can land on Sep 1. January is excluded
+# everywhere: Jan 1 is always a holiday, so its shift happens every year and is
+# already part of the seasonal shares. The size of the shifting block is
+# estimated per fiscal year from the daily DTS itself: the affected lines'
+# payment on a normal month-first business day, net of their ordinary daily
+# run-rate. (SSA's legacy 3rd-of-month checks cross a month boundary only when
+# the 1st-3rd are all non-business days - a rare Labor-Day edge, ignored.)
+# ---------------------------------------------------------------------------
+
+SHIFT_LINES = [
+    "SSA - Supplemental Security Income",
+    "VA - Benefits",
+    "DoD - Military Active Duty Pay",
+    "HHS - Federal Supple Med Insr Trust Fund",
+    "HHS - Federal Hospital Insr Trust Fund",
+    "HHS - Medicare Prescription Drugs",
+]
+
+
+def first_is_nonbusiness(month: pd.Period) -> bool:
+    d = month.to_timestamp()
+    if month.month == 1:
+        return False  # constant Jan 1 holiday effect lives in the shares
+    if d.weekday() >= 5:
+        return True
+    return month.month == 9 and d.weekday() == 0  # Sep 1 on a Monday = Labor Day
+
+
+def shift_amounts_by_fy() -> dict:
+    """USD mn paid on a normal month-first business day, net of daily run-rate."""
+    dts = pd.read_csv("data/dts_table2_raw.csv")
+    dts = dts[dts.account_type == "Treasury General Account (TGA)"].copy()
+    dts["date"] = pd.to_datetime(dts["record_date"])
+    dts["amt"] = pd.to_numeric(dts["transaction_today_amt"], errors="coerce").fillna(0.0)
+    dts = dts[dts.transaction_catg.isin(SHIFT_LINES) & dts.transaction_type.eq("Withdrawals")]
+    daily = dts.groupby("date")["amt"].sum()
+
+    per_fy = {}
+    months = pd.period_range(daily.index.min(), daily.index.max(), freq="M")
+    for m in months:
+        if first_is_nonbusiness(m) or m.month == 1:
+            continue
+        first = m.to_timestamp()
+        if first not in daily.index:
+            continue
+        mdays = daily[(daily.index >= first) & (daily.index < (m + 1).to_timestamp())]
+        runrate = mdays.iloc[1:].median() if len(mdays) > 1 else 0.0
+        per_fy.setdefault(fy_of(m), []).append(daily[first] - runrate)
+    return {fy: float(pd.Series(v).median()) for fy, v in per_fy.items()}
+
+
+def apply_calendar_rule(deficit: pd.Series, amounts: dict) -> pd.Series:
+    adj = deficit.copy()
+    for m in adj.index:
+        if not first_is_nonbusiness(m):
+            continue
+        a = amounts.get(fy_of(m), amounts[max(amounts)])
+        adj[m] -= a  # the block leaves this month...
+        prev = m - 1
+        if prev in adj.index:
+            adj[prev] += a  # ...and lands at the end of the prior one
+    return adj
+
+
+def history_fit(monthly, prof, fys):
+    """Model months for past FYs: shares x that year's ACTUAL bucket totals."""
+    frames = []
+    for y in fys:
+        months = pd.period_range(f"{y-1}-10", f"{y}-09", freq="M")
+        totals = monthly[[m in set(months) for m in monthly.index]].sum()
+        proj = pd.DataFrame(index=months)
+        for key in monthly.columns:
+            proj[key] = [totals[key] * prof.loc[m.month, key] for m in months]
+        rec = proj[[c for c in proj.columns if c[0] == "receipt"]].sum(axis=1)
+        out = proj[[c for c in proj.columns if c[0] == "outlay"]].sum(axis=1)
+        frames.append(pd.DataFrame({"model_deficit": out - rec}))
+    return pd.concat(frames)
+
+
 def main():
     t9 = load_t9()
     # guard: line codes must mean the same thing across the whole history
@@ -143,16 +228,41 @@ def main():
     v1["month"] = pd.PeriodIndex(v1["month"], freq="M")
     v1 = v1.set_index("month")
 
+    # ---- v2.1: payment-calendar rule + reconstructed history ----
+    amounts = shift_amounts_by_fy()
+    print("Month-start payment block by FY (USD mn):",
+          {k: f"{v:,.0f}" for k, v in sorted(amounts.items())})
+
+    fit = history_fit(monthly, prof, [2023, 2024, 2025])
+    model = pd.concat([fit["model_deficit"], v2["proj_deficit"]])
+    model = apply_calendar_rule(model, amounts)
+
+    actual_hist = (monthly[("outlay", "nondefense_other")] * 0  # index frame
+                   + monthly.xs("outlay", axis=1, level=0).sum(axis=1)
+                   - monthly.xs("receipt", axis=1, level=0).sum(axis=1))
+    actual_hist = actual_hist[actual_hist.index >= pd.Period("2022-10", "M")]
+
+    out = pd.DataFrame({"model_deficit": model.round(0), "actual_mts_deficit": actual_hist})
+    out["phase"] = ["projection" if m >= pd.Period("2025-10", "M") else "fit" for m in out.index]
+    out.index.name = "month"
+    out.to_csv("seasonal_model_monthly.csv")
+
     have = v2.dropna(subset=["actual_mts_deficit"]).copy()
     have["proj_v1"] = v1["proj_deficit"]
+    have["proj_v21"] = model[have.index]
     pd.set_option("display.float_format", lambda x: f"{x:,.0f}")
-    print("\nFY2026 monthly deficit (USD mn): v1 (DTS FY24-25) vs v2 (MTS 7-yr median) vs actual")
-    print(have[["proj_v1", "proj_deficit", "actual_mts_deficit"]]
+    print("\nFY2026 monthly deficit (USD mn): v1 / v2 / v2.1(calendar) vs actual")
+    print(have[["proj_v1", "proj_deficit", "proj_v21", "actual_mts_deficit"]]
           .rename(columns={"proj_deficit": "proj_v2", "actual_mts_deficit": "actual"}).to_string())
-    for name, col in [("v1", "proj_v1"), ("v2", "proj_deficit")]:
+    for name, col in [("v1  (DTS 2yr)", "proj_v1"), ("v2  (MTS 7yr)", "proj_deficit"),
+                      ("v2.1 (+calendar)", "proj_v21")]:
         err = have[col] - have["actual_mts_deficit"]
         sign = (have[col].gt(0) == have["actual_mts_deficit"].gt(0)).mean()
         print(f"{name}: mean |error| {err.abs().mean():,.0f}  mean error {err.mean():,.0f}  signs {sign:.0%}")
+
+    fitrows = out[out.phase.eq("fit")].dropna()
+    fiterr = fitrows["model_deficit"] - fitrows["actual_mts_deficit"]
+    print(f"\nHistory fit FY2023-25 ({len(fitrows)} months): mean |error| {fiterr.abs().mean():,.0f}")
 
 
 if __name__ == "__main__":

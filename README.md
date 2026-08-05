@@ -32,7 +32,7 @@ the mapping or named, quantified, and understood.
 | DTS-built vs MTS monthly deficit | cumulative wedge −$867bn on $5,942bn deficit (Mar 2023–Jun 2026), of which −$1,410bn interest cash-vs-accrual and +$329bn Education credit reform; unattributed residual +$214bn (~3.6%, trendless) |
 | MTS vs CBO historical actuals | ≤ **0.4%** in every category, FY2024 & FY2025 — the MTS→CBO hop is essentially free |
 | DTS-built vs CBO actuals | Medicaid −0.3%, Medicare net −2%, total receipts −2%; large gaps only where accounting differs by construction (net interest, premium withholding) |
-| FY2026 monthly split (the payoff) | mean absolute error **$67bn**/month on a $200bn mean actual over 9 published months, **9/9** surplus/deficit signs, near-zero bias |
+| FY2026 monthly split (the payoff) | mean absolute error **$30bn**/month on a $200bn mean actual over 9 published months, **9/9** surplus/deficit signs, zero bias (v2 shares + payment-calendar rule) |
 
 Interactive dashboard: `mapping_dashboard.html` (self-contained; open in a browser).
 
@@ -175,11 +175,33 @@ back to Mar 2015. Median month-of-FY share per bucket over FY2016–2019 + FY202
 MTS-accrual shape — correct when the target is the published deficit. Validation:
 mean |error| **$67bn**, mean error ≈ 0, **9/9** signs.
 
-Remaining monthly error is dominated by one deterministic effect: when the 1st (or
-3rd) of a month falls on a weekend, benefit payments shift into the prior month
-(Nov 1, 2025 was a Saturday → Oct/Nov 2026 errors mirror each other and nearly cancel
-as a pair). A payment-calendar rule is the designed next fix. Tariff-refund episodes
-(May–Jun 2026 customs) are policy events, handled as scenarios, not seasonality.
+**v2.1 — the payment-calendar rule** (in `seasonality_mts_history.py`, adopted):
+benefit streams paid on the 1st of the month (Medicare Advantage/Part D capitation,
+VA compensation, SSI, military active-duty pay) move to the last business day of the
+*prior* month whenever the 1st falls on a weekend — or on Labor Day, the one floating
+holiday that can land on Sep 1 (January is excluded: Jan 1 shifts every year, so it
+already lives in the shares). The size of the shifting block is *measured from the
+daily DTS*: the affected lines' month-first payment net of their daily run-rate —
+$64bn (FY2023) growing to $89bn (FY2026). Effect on the FY2026 validation:
+mean |error| **$67bn → $30bn**, zero bias, 9/9 signs. Oct 2025's miss shrank from
+−$148bn to −$59bn (the remainder is the government shutdown), Nov from +$134bn to
++$45bn, Mar from +$126bn to +$37bn.
+
+The same model reconstructs FY2023–25 history (shares × each year's actual totals +
+calendar rule) with mean |error| $53bn/month — the residual dominated by
+credit-reform months no seasonal model can see (`seasonal_model_monthly.csv`,
+charted in the dashboard's final card).
+
+**Withheld split calibration** (`calibrate_withheld_split.py`): the DTS withheld line
+mixes individual income tax and FICA; MTS Table 4 publishes the allocated gross
+pieces monthly back to 2015. Current trailing-12m split: **54.6% income / 45.4%
+FICA** (stable within 0.50–0.58 over 11 years; non-withheld: 92.4% income vs SECA).
+The share has real within-year seasonality (bonus season skews toward income tax) —
+use month-specific shares if CBO-category composition ever matters at monthly
+frequency. Output: `withheld_split_calibration.csv`.
+
+Tariff-refund episodes (May–Jun 2026 customs) are policy events, handled as
+scenarios, not seasonality.
 
 The division of labor going forward: **MTS history carries monthly shape; DTS carries
 intra-month shape** (mid-month/month-end coupon dates, Wednesday benefit cycles, the
@@ -187,15 +209,15 @@ intra-month shape** (mid-month/month-end coupon dates, Wednesday benefit cycles,
 
 ## Known limitations / roadmap
 
-1. **Payment-calendar rule** for benefit shifts — biggest fixable monthly error.
+1. ~~Payment-calendar rule~~ — **done** (v2.1, above).
 2. **Weekly/daily disaggregation** from the cached daily DTS (same buckets, finer calendar).
 3. **Interest accrual-vs-cash routing**: the projected deficit uses accrual interest;
    when the issuance tracker is attached, the bill-discount component moves to the
    financing identity explicitly.
-4. **Withheld income/FICA split** calibration from MTS Table 4 history (needed only
-   when CBO income-vs-payroll composition matters, not for the total).
+4. ~~Withheld income/FICA split calibration~~ — **done** (above); wire the
+   month-specific shares in when composition matters.
 5. **Debt-ceiling and shutdown windows** (2023 and 2025 episodes) should be dummied
-   in any re-estimated shares.
+   in any re-estimated shares; the Oct 2025 shutdown residual (−$59bn) is the live example.
 6. **Uncertainty bands**: CBO's own year-1 deficit RMSE is ~0.7% of GDP
    (`data/cbo_eval/`); wrap the monthly path in those bands for scenario work.
 7. Extending *daily* history before Feb 2023 requires the old DTS format (separate

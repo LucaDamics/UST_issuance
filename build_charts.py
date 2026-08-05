@@ -168,11 +168,13 @@ def cbo_pairs():
 
 
 def fy26_series():
-    s = pd.read_csv("fy2026_monthly_split_v2.csv")  # v2: MTS 10-yr history shares
+    # v2.1: seasonal model with calendar rule; fit over FY2023-25, projection FY2026
+    s = pd.read_csv("seasonal_model_monthly.csv")
     return {
         "months": s["month"].tolist(),
-        "proj": (s["proj_deficit"] / 1e3).round(1).tolist(),
+        "proj": [None if pd.isna(v) else round(v / 1e3, 1) for v in s["model_deficit"]],
         "actual": [None if pd.isna(v) else round(v / 1e3, 1) for v in s["actual_mts_deficit"]],
+        "projStart": s[s["phase"].eq("projection")]["month"].iloc[0],
     }
 
 
@@ -355,16 +357,19 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 </div>
 
 <div class="card">
-  <h2>The payoff: CBO&rsquo;s FY2026 deficit, split into months</h2>
-  <p class="sub">CBO&rsquo;s Feb&nbsp;2026 annual baseline distributed onto monthly seasonality
-  per bucket, against the MTS months published so far. The shares come from ten years of MTS
-  Table&nbsp;9 history (median month-of-year profile over FY2016&ndash;19 and FY2023&ndash;25,
-  COVID years excluded). Nine months validated: mean absolute error $67bn on a $200bn mean
-  actual, all nine surplus/deficit signs right, near-zero bias. The first cut used only the two
-  complete DTS fiscal years and scored $98bn with a June sign miss &mdash; the longer history
-  and the accrual-shaped interest profile bought the difference. The remaining Oct/Nov error is
-  the Nov-1-on-a-Saturday benefit shift (the pair nets to small); a deterministic
-  payment-calendar rule is the next fix.</p>
+  <h2>The payoff: the seasonal model against four years of months</h2>
+  <p class="sub">The seasonal model &mdash; per-bucket shares from ten years of MTS Table&nbsp;9
+  history (median over FY2016&ndash;19 + FY2023&ndash;25, COVID excluded) <em>plus the
+  payment-calendar rule</em>: a month-start benefit block (Medicare capitation, VA, SSI,
+  military pay; $64bn in FY2023 growing to $89bn in FY2026, measured from the daily DTS) moves
+  into the prior month whenever the 1st lands on a weekend or Labor Day. Left of the divider:
+  reconstruction of FY2023&ndash;25 using each year&rsquo;s actual totals (mean |error| $53bn,
+  including credit-reform months no seasonal model can see). Right: the true test &mdash;
+  CBO&rsquo;s Feb&nbsp;2026 annual baseline split into months. Nine months validated:
+  <b>mean absolute error $30bn</b> on a $200bn mean actual, all nine signs right, zero bias.
+  The rule alone cut the error from $67bn: Oct&rsquo;s miss shrank from &minus;$148bn to
+  &minus;$59bn (the rest is the shutdown), Nov from +$134bn to +$45bn, Mar from +$126bn to
+  +$37bn. Remaining known gap: tariff-refund scenarios for customs.</p>
   <div class="legend" id="lg-f26"></div>
   <div class="chart" id="ch-f26"></div>
   <details><summary>Data table</summary><div class="tblwrap" id="tb-f26"></div></details>
@@ -409,7 +414,7 @@ function niceTicks(lo,hi,n=5){
 }
 
 // ---- line chart with month crosshair ----
-function lineChart(hostId,{months,series,height=280,yfmt=fmtB,endLabels=true}){
+function lineChart(hostId,{months,series,height=280,yfmt=fmtB,endLabels=true,vlineAt=null,vlineLabel=null}){
   const host=document.getElementById(hostId); host.innerHTML="";
   const W=host.clientWidth||960, H=height, m={t:14,r:endLabels?70:16,b:26,l:52};
   const iw=W-m.l-m.r, ih=H-m.t-m.b;
@@ -427,6 +432,14 @@ function lineChart(hostId,{months,series,height=280,yfmt=fmtB,endLabels=true}){
   months.forEach((mm,i)=>{ if(i%step===0 && x(i)<W-m.r-30){
     const lb=svgEl("text",{x:x(i),y:H-8,"text-anchor":"middle",fill:css("--muted"),"font-size":11});
     lb.textContent=mLab(mm); svg.appendChild(lb); }});
+  if(vlineAt!=null){
+    const vi=months.indexOf(vlineAt);
+    if(vi>=0){
+      svg.appendChild(svgEl("line",{x1:x(vi),x2:x(vi),y1:m.t,y2:H-m.b,stroke:css("--axis"),"stroke-width":1}));
+      if(vlineLabel){ const lb=svgEl("text",{x:x(vi)+6,y:m.t+11,fill:css("--muted"),"font-size":11});
+        lb.textContent=vlineLabel; svg.appendChild(lb); }
+    }
+  }
   const lastIdx=s=>{ for(let i=s.values.length-1;i>=0;i--) if(s.values[i]!=null) return i; return -1; };
   series.forEach(s=>{
     let d="", pen=false;
@@ -652,13 +665,14 @@ function drawAll(){
     ["2024","2025"].flatMap(fy=>DATA.cbopairs[fy].majors.concat(DATA.cbopairs[fy].minors)
       .map(r=>[r.category,fy,fmt(r.dts),fmt(r.cbo),(r.pct<0?"\\u2212":"+")+Math.abs(r.pct).toFixed(1)+"%"])));
 
-  legend("lg-f26",[{name:"Projected: CBO annual \\u00d7 DTS seasonality",color:"--s3"},
+  legend("lg-f26",[{name:"Seasonal model (FY totals \\u00d7 shares + calendar rule; CBO baseline from Oct \\u201925)",color:"--s3"},
     {name:"Actual (MTS)",color:"--s2"}]);
   lineChart("ch-f26",{months:D.fy26.months,series:[
-    {name:"Projected",color:"--s3",values:D.fy26.proj,dashed:true},
-    {name:"Actual",color:"--s2",values:D.fy26.actual}],height:280});
-  table("tb-f26",["Month","Projected deficit $bn","Actual (MTS) $bn"],
-    D.fy26.months.map((mm,i)=>[mLab(mm),fmt(D.fy26.proj[i]),
+    {name:"Model",color:"--s3",values:D.fy26.proj,dashed:true},
+    {name:"Actual",color:"--s2",values:D.fy26.actual}],height:300,
+    vlineAt:D.fy26.projStart,vlineLabel:"CBO baseline \\u2192"});
+  table("tb-f26",["Month","Model deficit $bn","Actual (MTS) $bn"],
+    D.fy26.months.map((mm,i)=>[mLab(mm),D.fy26.proj[i]==null?"\\u2013":fmt(D.fy26.proj[i]),
       D.fy26.actual[i]==null?"\\u2013":fmt(D.fy26.actual[i])]));
 
   legend("lg-cbo",[{name:"DTS-built vs CBO",color:"--div-neg",shape:"sq"},
