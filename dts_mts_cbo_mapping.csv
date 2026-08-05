@@ -1,0 +1,197 @@
+dts_line,flow_type,treatment,recon_bucket,mts_side,cbo_category,split_rule,total_usd_mn_2023_2026,first_seen,last_seen,notes
+Public Debt Cash Issues (Table IIIB),deposit,strip,financing,outlay,financing,,96861742,2023-03-01,2026-06-30,Issuance tracker owns this
+Taxes - Withheld Individual/FICA,deposit,split,income_payroll,receipt,individual_income+payroll,mts_share_withheld,11129536,2023-03-01,2026-06-30,Split via MTS withheld shares for CBO stage
+Sub-Total Deposits,deposit,total_row,,,,,3251147,2023-03-01,2023-09-29,Mar-Sep 2023 format subtotal; drop
+Taxes - Non Withheld Ind/SECA Electronic,deposit,split,income_payroll,receipt,individual_income+payroll,mts_share_withheld,2355169,2023-03-01,2026-06-30,SECA portion to payroll
+Taxes - Corporate Income,deposit,map,corporate,receipt,corporate_income,,1612530,2023-03-01,2026-06-30,
+Taxes - Non Withheld Ind/SECA Other,deposit,split,income_payroll,receipt,individual_income+payroll,mts_share_withheld,1573009,2023-03-01,2026-06-30,SECA portion to payroll
+DHS - Customs and Certain Excise Taxes,deposit,map,customs,receipt,other_revenue,,402387,2023-03-01,2025-11-07,Name until Nov 2025
+Taxes - Miscellaneous Excise,deposit,map,excise,receipt,other_revenue,,329649,2023-03-01,2026-06-30,
+United States Postal Service (USPS),deposit,offsetting,other_agencies,outlay,net_against_outlays,,267240,2023-10-02,2026-06-30,TREATMENT CHANGE: was exclude; MTS/CBO total deficit includes postal. Note: USPS payroll appears to flow outside this line pair
+Federal Retirement Thrift Savings Plan,deposit,exclude,tsp_fiduciary,outlay,excluded,,224794,2023-03-01,2026-06-30,"TSP fiduciary flows, not federal budget; near-wash both sides"
+"DHS - Customs Duties, Taxes, and Fees",deposit,map,customs,receipt,other_revenue,,218537,2025-11-10,2026-06-30,Renamed line from 10 Nov 2025
+HHS - Medicare Premiums,deposit,offsetting,hhs,outlay,net_against_outlays,,198452,2023-03-01,2026-06-30,MTS Medicare is net of premiums; DTS gross - this restores comparability
+Dept of Education (ED),deposit,offsetting,ed,outlay,net_against_outlays,,196042,2023-03-01,2026-06-30,Student loan repayments; credit-reform cash vs accrual wedge
+Federal Deposit Insurance Corp (FDIC),deposit,offsetting,other_agencies,outlay,net_against_outlays,,166114,2023-03-01,2026-06-30,Premiums/recoveries
+State Unemployment Insurance Deposits,deposit,map,income_payroll,receipt,payroll,,155570,2023-03-01,2026-06-30,MTS 'Deposits by States' under Social Insurance
+IAP - Foreign Military Sales,deposit,offsetting,iap,outlay,net_against_outlays,,135381,2023-10-02,2026-06-30,FMS advances net against the trust outlays
+Taxes - Estate and Gift,deposit,map,estate_gift,receipt,other_revenue,,83601,2023-03-01,2026-06-30,
+Small Business Administration (SBA),deposit,offsetting,other_agencies,outlay,net_against_outlays,,79648,2023-03-01,2026-06-30,Loan repayments/fees
+HUD - Federal Housing Admin (FHA),deposit,offsetting,hud,outlay,net_against_outlays,,76720,2023-03-01,2026-06-30,FHA premiums
+Postal Service,deposit,offsetting,other_agencies,outlay,net_against_outlays,,54979,2023-03-01,2023-09-29,TREATMENT CHANGE: was exclude; postal revenue nets against outlays. Name until Sep 2023
+DOI - Gas and Oil Lease Sales Proceeds,deposit,offsetting,other_agencies,outlay,net_against_outlays,,52285,2023-03-01,2026-06-30,"MTS books as undistributed offsetting receipts, not under Interior"
+Dept of Justice (DOJ),deposit,offsetting,doj,outlay,net_against_outlays,,42474,2023-03-01,2026-06-30,Fines/settlements
+DOL - Pension Benefit Guaranty Corp.,deposit,offsetting,dol,outlay,net_against_outlays,,39328,2023-03-01,2026-06-30,PBGC premiums/investment income
+Dept of Defense (DoD) - misc,deposit,offsetting,dod,outlay,net_against_outlays,,35340,2024-10-01,2026-06-30,
+Dept of Energy (DOE),deposit,offsetting,doe,outlay,net_against_outlays,,32570,2023-03-01,2026-06-30,Power marketing receipts
+Dept of Veterans Affairs (VA),deposit,offsetting,va,outlay,net_against_outlays,,30409,2023-03-01,2026-06-30,
+Taxes - Federal Unemployment (FUTA),deposit,map,income_payroll,receipt,payroll,,29810,2023-03-01,2026-06-30,
+USDA - Commodity Credit Corporation,deposit,offsetting,usda,outlay,net_against_outlays,,29118,2023-03-01,2026-06-30,
+"Taxes - IRS Collected Estate, Gift, misc",deposit,map,estate_gift,receipt,other_revenue,,28304,2023-03-01,2026-06-30,Contains some misc IRS collections
+FCC - Universal Service Fund,deposit,map,excise,receipt,other_revenue,,28139,2023-03-01,2026-06-30,MTS counts USF under Excise Taxes
+Dept of Homeland Security (DHS) - misc,deposit,offsetting,dhs,outlay,net_against_outlays,,26885,2023-03-01,2026-06-30,
+Dept of Health & Human Serv (HHS) - misc,deposit,offsetting,hhs,outlay,net_against_outlays,,24505,2023-03-01,2026-06-30,
+International Monetary Fund (IMF),deposit,offsetting,iap,outlay,net_against_outlays,,23555,2023-03-01,2026-06-30,
+Foreign Military Sales Program,deposit,offsetting,iap,outlay,net_against_outlays,,23544,2023-03-01,2023-09-29,Name until Sep 2023
+Taxes - Railroad Retirement,deposit,map,income_payroll,receipt,payroll,,23514,2023-03-01,2026-06-30,
+TREAS - GSE Proceeds,deposit,offsetting,treasury,outlay,net_against_outlays,,22562,2023-03-01,2026-06-30,GSE dividends - offsetting receipts
+USDA - Loan Repayments,deposit,offsetting,usda,outlay,net_against_outlays,,22466,2023-03-01,2025-09-30,Name until Sep 2025
+HHS - Marketplace Receipts,deposit,offsetting,hhs,outlay,net_against_outlays,,21787,2023-03-01,2026-06-30,
+Dept of State (DOS),deposit,offsetting,dos,outlay,net_against_outlays,,21494,2023-03-01,2026-06-30,Consular fees
+Unclassified - Deposits,deposit,pooled,misc_receipts,receipt,other_revenue,,20426,2023-03-01,2026-06-30,
+Dept of Housing & Urban Dev (HUD) - misc,deposit,offsetting,hud,outlay,net_against_outlays,,20372,2023-03-01,2026-06-30,
+TREAS - United States Mint,deposit,offsetting,treasury,outlay,net_against_outlays,,19162,2023-03-01,2026-06-30,Seigniorage etc.
+Dept of Commerce (DOC),deposit,offsetting,doc,outlay,net_against_outlays,,18306,2023-03-01,2026-06-30,
+Dept of Defense (DoD),deposit,offsetting,dod,outlay,net_against_outlays,,16450,2023-10-02,2024-09-30,FY2024-only deposit line name
+DHS - Transportation Security Admn (TSA),deposit,offsetting,dhs,outlay,net_against_outlays,,16176,2023-03-01,2026-06-30,TSA fees
+Securities and Exchange Commission (SEC),deposit,offsetting,other_agencies,outlay,net_against_outlays,,15895,2023-03-01,2026-06-30,Registration fees
+Federal Reserve Earnings,deposit,map,misc_receipts,receipt,other_revenue,,15603,2023-03-01,2026-06-30,Suppressed by Fed deferred asset in part of sample
+Independent Agencies - misc,deposit,offsetting,other_agencies,outlay,net_against_outlays,,15459,2023-03-01,2026-06-30,
+Dept of Treasury (TREAS) - misc,deposit,offsetting,treasury,outlay,net_against_outlays,,14286,2023-03-01,2026-06-30,
+Dept of Agriculture (USDA) - misc,deposit,offsetting,usda,outlay,net_against_outlays,,13231,2023-03-01,2026-06-30,
+DHS - Fed Emergency Mgmt Agency (FEMA),deposit,offsetting,dhs,outlay,net_against_outlays,,12962,2023-03-01,2026-06-30,
+OPM - Federal Employee Insurance Receipt,deposit,offsetting,opm,outlay,net_against_outlays,,12927,2023-03-01,2026-06-30,
+USDA - Federal Crop Insurance Corp Fund,deposit,offsetting,usda,outlay,net_against_outlays,,12898,2023-03-01,2026-06-30,
+SSA - Supplemental Security Income,deposit,offsetting,ssa,outlay,net_against_outlays,,11986,2023-03-01,2026-06-30,State SSI supplement payments
+Judicial Branch - Courts,deposit,offsetting,other_agencies,outlay,net_against_outlays,,10993,2023-03-01,2026-06-30,Court fees/deposits
+TREAS - Federal Financing Bank,deposit,offsetting,treasury,outlay,net_against_outlays,,10829,2023-03-01,2026-06-30,
+DOI - Land and Minerals Management,deposit,offsetting,doi,outlay,net_against_outlays,,8409,2023-03-01,2026-06-30,
+Dept of Transportation (DOT),deposit,offsetting,dot,outlay,net_against_outlays,,8101,2023-03-01,2026-06-30,
+IAP - US Int'l Devlop Finance Corp (DFC),deposit,offsetting,iap,outlay,net_against_outlays,,7888,2023-03-01,2026-06-30,
+USDA - Rural Services,deposit,offsetting,usda,outlay,net_against_outlays,,7773,2025-10-01,2026-06-30,Successor from Oct 2025
+General Services Administration (GSA),deposit,offsetting,other_agencies,outlay,net_against_outlays,,7555,2023-03-01,2026-06-30,
+Export-Import Bank,deposit,offsetting,other_agencies,outlay,net_against_outlays,,6458,2023-03-01,2026-06-30,
+Federal Communications Commission (FCC),deposit,offsetting,other_agencies,outlay,net_against_outlays,,6425,2023-03-01,2026-06-30,Spectrum/regulatory fees
+Dept of Interior (DOI) - misc,deposit,offsetting,doi,outlay,net_against_outlays,,5534,2023-03-01,2026-06-30,
+DoD - Health,deposit,offsetting,dod,outlay,net_against_outlays,,5213,2024-10-01,2026-06-30,
+TREAS - Comptroller of the Currency,deposit,offsetting,treasury,outlay,net_against_outlays,,4940,2023-03-01,2026-06-30,
+US Army Corps of Engineers,deposit,offsetting,corps,outlay,net_against_outlays,,4677,2023-10-02,2026-06-30,
+RRB - Natl Railroad Retirement Inv Trust,deposit,offsetting,other_agencies,outlay,net_against_outlays,,4213,2023-03-01,2026-06-30,NRRIT transfers fund benefits
+National Credit Union Admin (NCUA),deposit,offsetting,other_agencies,outlay,net_against_outlays,,3911,2023-03-01,2026-06-30,
+DHS - Seized Assets,deposit,offsetting,dhs,outlay,net_against_outlays,,3889,2023-03-01,2026-06-30,
+TREAS - Bureau of Engraving and Printing,deposit,offsetting,treasury,outlay,net_against_outlays,,3661,2023-03-01,2026-06-30,
+Federal Trade Commission (FTC),deposit,offsetting,other_agencies,outlay,net_against_outlays,,3636,2023-03-01,2026-06-30,
+Social Security Admin (SSA) - misc,deposit,offsetting,ssa,outlay,net_against_outlays,,3432,2023-03-01,2026-06-30,
+DOI - Fish and Wildlife and Parks,deposit,offsetting,doi,outlay,net_against_outlays,,2959,2023-03-01,2026-06-30,
+DOI - Water and Science,deposit,offsetting,doi,outlay,net_against_outlays,,2931,2023-03-01,2026-06-30,
+Dept of Labor (DOL) - misc,deposit,offsetting,dol,outlay,net_against_outlays,,2117,2023-03-01,2026-06-30,
+Environmental Protection Agency (EPA),deposit,offsetting,other_agencies,outlay,net_against_outlays,,1553,2023-03-01,2026-06-30,
+District of Columbia,deposit,offsetting,other_agencies,outlay,net_against_outlays,,1348,2023-03-01,2026-06-30,
+Other Deposits,deposit,pooled,misc_receipts,receipt,other_revenue,,1300,2023-03-01,2023-09-05,Mar-Sep 2023 footnoted line
+Legislative Branch - Library of Congress,deposit,offsetting,other_agencies,outlay,net_against_outlays,,782,2023-03-01,2026-06-30,
+RRB - Unemployment Insurance,deposit,map,income_payroll,receipt,payroll,,358,2023-03-01,2026-06-30,Tiny
+IAP - Agency for Int'l Development (AID),deposit,offsetting,iap,outlay,net_against_outlays,,267,2023-03-01,2025-09-30,
+National Science Foundation (NSF),deposit,offsetting,other_agencies,outlay,net_against_outlays,,188,2023-03-01,2026-06-30,
+Int'l Assistance Programs (IAP) - misc,deposit,offsetting,iap,outlay,net_against_outlays,,173,2023-03-01,2026-06-30,
+Legislative Branch - misc,deposit,offsetting,other_agencies,outlay,net_against_outlays,,87,2023-03-01,2026-06-30,
+Office of Personnel Mgmt (OPM) - misc,deposit,offsetting,opm,outlay,net_against_outlays,,0,2023-03-01,2026-06-30,
+Public Debt Cash Redemp. (Table IIIB),withdrawal,strip,financing,outlay,financing,,91282989,2023-03-01,2026-06-30,Issuance tracker owns this
+SSA - Benefits Payments,withdrawal,map,ssa,outlay,social_security,,4508096,2023-03-01,2026-06-30,Shifts when 3rd falls on weekend
+Sub-Total Withdrawals,withdrawal,total_row,,,,,4250583,2023-03-01,2023-09-29,Mar-Sep 2023 format subtotal; drop
+HHS - Grants to States for Medicaid,withdrawal,map,hhs,outlay,medicaid,,2188643,2023-03-01,2026-06-30,
+HHS - Federal Supple Med Insr Trust Fund,withdrawal,map,hhs,outlay,medicare,,1845401,2023-03-01,2026-06-30,SMI - Parts B/D
+Interest on Treasury Securities,withdrawal,map,treasury,outlay,net_interest,,1840436,2023-03-01,2026-06-30,Cash on coupon dates; MTS accrues - the big wedge
+HHS - Federal Hospital Insr Trust Fund,withdrawal,map,hhs,outlay,medicare,,1426125,2023-03-01,2026-06-30,HI - Part A
+Dept of Defense (DoD) - misc,withdrawal,map,dod,outlay,defence_discretionary,,1302977,2023-10-02,2026-06-30,Successor line from Oct 2023
+Taxes - Individual Tax Refunds (EFT),withdrawal,negative_receipt,income_payroll,receipt,individual_income,,1143255,2023-03-01,2026-06-30,MTS nets refunds off receipts
+Federal Salaries (EFT),withdrawal,pooled,salaries,outlay,nondefence_discretionary,,811810,2023-03-01,2026-06-30,Cross-agency payroll; no single MTS counterpart
+Dept of Education (ED),withdrawal,map,ed,outlay,education_mixed,,746291,2023-03-01,2026-06-30,Student aid largely mandatory. MTS ED swings negative on credit reestimates - expect big wedges
+Unclassified,withdrawal,pooled,unclassified,outlay,other_outlays,,706534,2023-10-02,2026-06-30,Successor of Other Withdrawals from Oct 2023; ~$1bn/day
+VA - Benefits,withdrawal,map,va,outlay,veterans_mandatory,,648580,2023-03-01,2026-06-30,Shifts when 1st is non-business day
+HHS - Medicare Prescription Drugs,withdrawal,map,hhs,outlay,medicare,,489457,2023-03-01,2026-06-30,
+HHS - Marketplace Payments,withdrawal,map,hhs,outlay,health_subsidies,,422981,2023-03-01,2026-06-30,
+Other Withdrawals,withdrawal,pooled,unclassified,outlay,other_outlays,,382326,2023-03-01,2023-09-29,Mar-Sep 2023 footnoted line
+USDA - Supp Nutrition Assist Prog (SNAP),withdrawal,map,usda,outlay,income_security,,354048,2023-03-01,2026-06-30,
+Dept of Veterans Affairs (VA),withdrawal,map,va,outlay,veterans_mixed,,345165,2023-03-01,2026-06-30,Mostly medical care (discretionary)
+OPM - Federal Employee Insurance Payment,withdrawal,map,opm,outlay,federal_retirement,,305901,2023-03-01,2026-06-30,FEHB etc.
+OPM - Civil Serv Retirement & Disability,withdrawal,map,opm,outlay,federal_retirement,,287515,2023-03-01,2026-06-30,
+DoD - Military Active Duty Pay,withdrawal,map,dod,outlay,defence_discretionary,,286287,2023-10-02,2026-06-30,Shifts when 1st is non-business day
+Dept of Housing & Urban Dev (HUD) - misc,withdrawal,map,hud,outlay,nondefence_discretionary,,281501,2023-03-01,2026-06-30,
+Federal Retirement Thrift Savings Plan,withdrawal,exclude,tsp_fiduciary,outlay,excluded,,224499,2023-03-01,2026-06-30,"TSP fiduciary flows, not federal budget; near-wash both sides"
+Defense Vendor Payments (EFT),withdrawal,map,dod,outlay,defence_discretionary,,222084,2023-03-01,2023-09-29,Name until Sep 2023
+DOT - Federal Highway Administration,withdrawal,map,dot,outlay,nondefence_discretionary,,218281,2023-03-01,2026-06-30,Trust-fund financed
+SSA - Supplemental Security Income,withdrawal,map,ssa,outlay,income_security,,211471,2023-03-01,2026-06-30,Shifts when 1st falls on weekend
+Dept of Energy (DOE),withdrawal,map,doe,outlay,energy_mixed,,200984,2023-03-01,2026-06-30,NNSA share is defence
+DoD - Military Retirement,withdrawal,map,odcp,outlay,federal_retirement,,190473,2023-10-02,2026-06-30,MTS: Other Defense Civil Programs
+Federal Deposit Insurance Corp (FDIC),withdrawal,map,other_agencies,outlay,other_mandatory,,161793,2023-03-01,2026-06-30,Resolution outflows
+HHS - Othr Cent Medicare & Medicaid Serv,withdrawal,map,hhs,outlay,medicare,,151737,2023-03-01,2026-06-30,CMS other
+HHS - National Institutes of Health,withdrawal,map,hhs,outlay,nondefence_discretionary,,147808,2023-03-01,2026-06-30,
+TREAS - Federal Financing Bank,withdrawal,map,treasury,outlay,other_mandatory,,144553,2023-03-01,2026-06-30,
+DHS - Fed Emergency Mgmt Agency (FEMA),withdrawal,map,dhs,outlay,nondefence_discretionary,,131001,2023-03-01,2026-06-30,Lumpy around disasters
+DOL - Unemployment Benefits,withdrawal,map,dol,outlay,income_security,,127289,2023-03-01,2026-06-30,
+General Services Administration (GSA),withdrawal,map,other_agencies,outlay,nondefence_discretionary,,119626,2023-03-01,2026-06-30,
+United States Postal Service (USPS),withdrawal,map,other_agencies,outlay,other_mandatory,,115677,2023-10-02,2026-06-30,TREATMENT CHANGE: was exclude; MTS/CBO total deficit includes postal
+DHS - Customs & Border Protection (CBP),withdrawal,map,dhs,outlay,nondefence_discretionary,,115291,2023-03-01,2026-06-30,Includes tariff refunds/drawback - drives customs wedge in 2026
+USDA - Child Nutrition,withdrawal,map,usda,outlay,income_security,,103092,2023-03-01,2026-06-30,
+HHS - Othr Admin for Children & Families,withdrawal,map,hhs,outlay,income_security,,92975,2023-03-01,2026-06-30,
+Dept of Agriculture (USDA) - misc,withdrawal,map,usda,outlay,nondefence_discretionary,,92744,2023-03-01,2026-06-30,
+HHS - Payments to States,withdrawal,map,hhs,outlay,income_security,,91787,2023-03-01,2025-09-30,TANF/child care/foster block; name until Sep 2025
+IAP - Foreign Military Sales,withdrawal,map,iap,outlay,nondefence_discretionary,,87524,2023-10-02,2026-06-30,FMS trust outlays
+Dept of Justice (DOJ),withdrawal,map,doj,outlay,nondefence_discretionary,,83195,2023-03-01,2026-06-30,
+US Army Corps of Engineers,withdrawal,map,corps,outlay,nondefence_discretionary,,80834,2023-10-02,2026-06-30,
+Dept of State (DOS),withdrawal,map,dos,outlay,nondefence_discretionary,,78691,2023-03-01,2026-06-30,
+DOT - Federal Transit Administration,withdrawal,map,dot,outlay,nondefence_discretionary,,77536,2023-03-01,2026-06-30,
+Taxes - Business Tax Refunds (EFT),withdrawal,negative_receipt,corporate,receipt,corporate_income,,74734,2023-03-01,2026-06-30,MTS nets refunds off receipts
+NASA,withdrawal,map,other_agencies,outlay,nondefence_discretionary,,73838,2023-03-01,2026-06-30,
+Dept of Homeland Security (DHS) - misc,withdrawal,map,dhs,outlay,nondefence_discretionary,,67724,2023-03-01,2026-06-30,
+Environmental Protection Agency (EPA),withdrawal,map,other_agencies,outlay,nondefence_discretionary,,67625,2023-03-01,2026-06-30,
+IAP - Agency for Int'l Development (AID),withdrawal,map,iap,outlay,nondefence_discretionary,,66964,2023-03-01,2025-09-30,Line ends Sep 2025
+Dept of Labor (DOL) - misc,withdrawal,map,dol,outlay,nondefence_discretionary,,60134,2023-03-01,2026-06-30,
+Dept of Interior (DOI) - misc,withdrawal,map,doi,outlay,nondefence_discretionary,,60082,2023-03-01,2026-06-30,
+HHS - Temp Assistance for Needy Families,withdrawal,map,hhs,outlay,income_security,,58427,2023-03-01,2026-06-30,
+HUD - Federal Housing Admin (FHA),withdrawal,map,hud,outlay,other_mandatory,,57128,2023-03-01,2026-06-30,Credit programs
+USDA - Federal Crop Insurance Corp Fund,withdrawal,map,usda,outlay,other_mandatory,,55388,2023-03-01,2026-06-30,
+DOL - Pension Benefit Guaranty Corp.,withdrawal,map,dol,outlay,other_mandatory,,55031,2023-03-01,2026-06-30,
+DoD - Health,withdrawal,map,dod,outlay,defence_discretionary,,53622,2024-10-01,2026-06-30,Split out from Oct 2024
+RRB - Benefit Payments,withdrawal,map,other_agencies,outlay,federal_retirement,,52159,2023-03-01,2026-06-30,Railroad retirement benefits
+HHS - Centers for Disease Control (CDC),withdrawal,map,hhs,outlay,nondefence_discretionary,,51789,2023-03-01,2026-06-30,
+HHS - Health Resources & Services Admin,withdrawal,map,hhs,outlay,nondefence_discretionary,,47811,2023-03-01,2026-06-30,
+Dept of Commerce (DOC),withdrawal,map,doc,outlay,nondefence_discretionary,,46606,2023-03-01,2026-06-30,
+DOT - Federal Aviation Administration,withdrawal,map,dot,outlay,nondefence_discretionary,,46199,2023-03-01,2026-06-30,
+USDA - Other Farm Service,withdrawal,map,usda,outlay,other_mandatory,,41151,2023-03-01,2026-06-30,
+HHS - Other Public Health Services,withdrawal,map,hhs,outlay,nondefence_discretionary,,36105,2023-03-01,2026-06-30,
+USDA - Commodity Credit Corporation,withdrawal,map,usda,outlay,other_mandatory,,34549,2023-03-01,2026-06-30,Lumpy
+USDA - Loan Payments,withdrawal,map,usda,outlay,other_mandatory,,34507,2023-03-01,2025-09-30,Name until Sep 2025
+Small Business Administration (SBA),withdrawal,map,other_agencies,outlay,other_mandatory,,32755,2023-03-01,2026-06-30,Credit programs
+International Monetary Fund (IMF),withdrawal,map,iap,outlay,other_mandatory,,31897,2023-03-01,2026-06-30,Quota/NAB exchanges - mostly monetary asset swaps; watch wedge
+Dept of Health & Human Serv (HHS) - misc,withdrawal,map,hhs,outlay,nondefence_discretionary,,30023,2023-03-01,2026-06-30,
+National Science Foundation (NSF),withdrawal,map,other_agencies,outlay,nondefence_discretionary,,29770,2023-03-01,2026-06-30,
+HHS - Indian Health Service,withdrawal,map,hhs,outlay,nondefence_discretionary,,29122,2023-03-01,2026-06-30,
+FCC - Universal Service Fund,withdrawal,map,other_agencies,outlay,other_mandatory,,28849,2023-03-01,2026-06-30,USF payouts; receipts side sits in excise
+Dept of Treasury (TREAS) - misc,withdrawal,map,treasury,outlay,nondefence_discretionary,,27743,2023-03-01,2026-06-30,
+Postal Service Money Orders and Other,withdrawal,map,other_agencies,outlay,other_mandatory,,26022,2023-03-01,2023-09-29,TREATMENT CHANGE: was exclude. Name until Sep 2023
+USDA - Supp Nutrition Assist Prog (WIC),withdrawal,map,usda,outlay,income_security,,25071,2023-03-01,2026-06-30,
+Independent Agencies - misc,withdrawal,map,other_agencies,outlay,nondefence_discretionary,,22862,2023-03-01,2026-06-30,
+HHS - Payments to Children and Families,withdrawal,map,hhs,outlay,income_security,,21736,2025-10-01,2026-06-30,Successor of Payments to States from Oct 2025
+Federal Communications Commission (FCC),withdrawal,map,other_agencies,outlay,nondefence_discretionary,,19175,2023-03-01,2026-06-30,
+DOT - Federal Railroad Administration,withdrawal,map,dot,outlay,nondefence_discretionary,,19064,2023-03-01,2026-06-30,
+DOI - Fish and Wildlife and Parks,withdrawal,map,doi,outlay,nondefence_discretionary,,18482,2023-03-01,2026-06-30,
+TREAS - United States Mint,withdrawal,map,treasury,outlay,nondefence_discretionary,,18067,2023-03-01,2026-06-30,
+Dept of Transportation (DOT) - misc,withdrawal,map,dot,outlay,nondefence_discretionary,,17593,2023-03-01,2026-06-30,
+Social Security Admin (SSA) - misc,withdrawal,map,ssa,outlay,nondefence_discretionary,,16592,2023-03-01,2026-06-30,Admin
+DOI - Water and Science,withdrawal,map,doi,outlay,nondefence_discretionary,,11417,2023-03-01,2026-06-30,
+Judicial Branch - Courts,withdrawal,map,other_agencies,outlay,nondefence_discretionary,,10763,2023-03-01,2026-06-30,
+TREAS - Claims Judgments and Relief Acts,withdrawal,map,treasury,outlay,other_mandatory,,10696,2023-03-01,2026-06-30,
+DOI - Land and Minerals Management,withdrawal,map,doi,outlay,nondefence_discretionary,,9844,2023-03-01,2026-06-30,
+IAP - US Int'l Devlop Finance Corp (DFC),withdrawal,map,iap,outlay,nondefence_discretionary,,9797,2023-03-01,2026-06-30,
+USDA - Rural Services,withdrawal,map,usda,outlay,other_mandatory,,9720,2025-10-01,2026-06-30,Successor from Oct 2025
+IAP - Multilateral Assistance,withdrawal,map,iap,outlay,nondefence_discretionary,,8799,2023-03-01,2026-06-30,
+Int'l Assistance Programs (IAP) - misc,withdrawal,map,iap,outlay,nondefence_discretionary,,8798,2023-03-01,2026-06-30,
+DHS - Transportation Security Admn (TSA),withdrawal,map,dhs,outlay,nondefence_discretionary,,8702,2023-03-01,2026-06-30,
+Legislative Branch - misc,withdrawal,map,other_agencies,outlay,nondefence_discretionary,,6099,2023-03-01,2026-06-30,
+Securities and Exchange Commission (SEC),withdrawal,map,other_agencies,outlay,nondefence_discretionary,,5171,2023-03-01,2026-06-30,
+TREAS - IRS Refunds for Puerto Rico,withdrawal,negative_receipt,income_payroll,receipt,individual_income,,3532,2023-03-01,2026-06-30,Covered-over PR refunds
+TREAS - Pmt to Resolution Funding Corp,withdrawal,map,treasury,outlay,other_mandatory,,3004,2023-03-01,2026-06-30,
+TREAS - Bureau of Engraving and Printing,withdrawal,map,treasury,outlay,nondefence_discretionary,,2136,2023-03-01,2026-06-30,
+Export-Import Bank,withdrawal,map,other_agencies,outlay,other_mandatory,,1945,2023-03-01,2026-06-30,
+National Credit Union Admin (NCUA),withdrawal,map,other_agencies,outlay,other_mandatory,,1741,2023-03-01,2026-06-30,
+Legislative Branch - Library of Congress,withdrawal,map,other_agencies,outlay,nondefence_discretionary,,1652,2023-03-01,2026-06-30,
+District of Columbia,withdrawal,map,other_agencies,outlay,nondefence_discretionary,,1481,2023-03-01,2026-06-30,Federal payments to DC
+Office of Personnel Mgmt (OPM) - misc,withdrawal,map,opm,outlay,federal_retirement,,1320,2023-03-01,2026-06-30,
+Federal Trade Commission (FTC),withdrawal,map,other_agencies,outlay,nondefence_discretionary,,1277,2023-03-01,2026-06-30,
+Corporation for Public Broadcasting,withdrawal,map,other_agencies,outlay,nondefence_discretionary,,1172,2023-03-01,2025-09-30,Line ends Sep 2025
+TREAS - Comptroller of the Currency,withdrawal,map,treasury,outlay,nondefence_discretionary,,1025,2023-03-01,2026-06-30,
+Coronavirus Relief Fund,withdrawal,map,treasury,outlay,other_mandatory,,184,2023-03-01,2023-09-29,Residual pandemic flows
+Railroad Retirement Board (RRB) - misc,withdrawal,map,other_agencies,outlay,federal_retirement,,127,2023-03-01,2026-06-30,
+Emergency Rental Assistance,withdrawal,map,treasury,outlay,other_mandatory,,12,2023-03-01,2023-09-29,Residual pandemic flows
+ESF - Economic Recovery Programs,withdrawal,map,treasury,outlay,other_mandatory,,-10988,2023-03-01,2026-06-30,Runs negative (recoveries)

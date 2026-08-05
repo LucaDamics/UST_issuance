@@ -1,0 +1,53 @@
+dts_line,flow_type,treatment,mts_category,mts_agency,mts_function,cbo_category,split_rule,notes
+Taxes - Withheld Individual/FICA,deposit,split,Individual Income Taxes + Social Insurance,,,individual_income+payroll,mts_share_withheld,Split between individual income and payroll using historical MTS shares
+Taxes - Non Withheld Ind/SECA Electronic,deposit,split,Individual Income Taxes + Social Insurance,,,individual_income+payroll,mts_share_nonwithheld,SECA portion goes to payroll
+Taxes - Non Withheld Ind/SECA Other,deposit,split,Individual Income Taxes + Social Insurance,,,individual_income+payroll,mts_share_nonwithheld,SECA portion goes to payroll
+Taxes - Corporate Income,deposit,map,Corporation Income Taxes,,,corporate_income,,
+Taxes - Miscellaneous Excise,deposit,map,Excise Taxes,,,other_revenue,,
+Taxes - Federal Unemployment (FUTA),deposit,map,Unemployment Insurance,,,payroll,,
+Deposits by States: Unemployment,deposit,map,Unemployment Insurance,,,payroll,State UI deposits to trust funds
+Taxes - Railroad Retirement,deposit,map,Other Retirement,,,payroll,,
+Taxes - Estate and Gift,deposit,map,Estate and Gift Taxes,,,other_revenue,,
+Customs and Certain Excise Taxes,deposit,map,Customs Duties,,,other_revenue,,Includes small excise component
+Federal Reserve Earnings,deposit,map,Miscellaneous Receipts,,,other_revenue,,Suppressed since 2022 due to Fed deferred asset
+Foreign Military Sales Program,deposit,offsetting,Offsetting collection,Defense,,net_against_outlays,,Nets against defence outlays in budget terms
+Postal Service,deposit,exclude,Off-budget postal,,,excluded,,Off-budget
+Interest recd from cash investments,deposit,map,Miscellaneous Receipts,,,other_revenue,,Tiny
+Public Debt Cash Issues (Table IIIB),deposit,strip,Financing,,,financing,,Owned by issuance tracker
+Social Security Benefits (EFT),withdrawal,map,,Social Security Administration,Social Security (650),social_security,,
+Supple. Security Income Benefits,withdrawal,map,,Social Security Administration,Income Security (600),income_security,,
+Medicare and Other CMS Payments,withdrawal,map,,Health and Human Services,Medicare (570),medicare,,Gross of premiums vs MTS net
+Medicare Advantage - Part C&D Payments,withdrawal,map,,Health and Human Services,Medicare (570),medicare,,Lands early month; watch payment-date shifts
+Grants to States for Medicaid,withdrawal,map,,Health and Human Services,Health (550),medicaid,,
+Marketplace Payments,withdrawal,map,,Health and Human Services,Health (550),health_subsidies,,
+Health and Human Services Grants (misc),withdrawal,map,,Health and Human Services,Health (550),nondefence_discretionary,,
+Temporary Assistance for Needy Families (HHS),withdrawal,map,,Health and Human Services,Income Security (600),income_security,,
+Defense Vendor Payments (EFT),withdrawal,map,,Defense - Military Programs,National Defense (050),defence_discretionary,,
+Dept of Defense - Military Active Duty Pay,withdrawal,map,,Defense - Military Programs,National Defense (050),defence_discretionary,,Shifts when 1st is non-business day
+Military Retirement,withdrawal,map,,Other Defense Civil Programs,Income Security (600),federal_retirement,,
+Interest on Treasury Securities,withdrawal,map,,Treasury,Net Interest (900),net_interest,,Cash basis; MTS is accrual - large timing wedge
+IRS Tax Refunds Individual (EFT),withdrawal,negative_receipt,Individual Income Taxes (refunds),,,individual_income,,Reclassify: negative receipt not outlay
+IRS Tax Refunds Business (EFT),withdrawal,negative_receipt,Corporation Income Taxes (refunds),,,corporate_income,,Reclassify: negative receipt not outlay
+Unemployment Insurance Benefits,withdrawal,map,,Labor,Income Security (600),income_security,,
+Labor Dept. prgms (excl. unemployment),withdrawal,map,,Labor,Education Training (500),nondefence_discretionary,,
+Supple. Nutrition Assist. Program (SNAP),withdrawal,map,,Agriculture,Income Security (600),income_security,,
+Food and Nutrition Service (misc),withdrawal,map,,Agriculture,Income Security (600),income_security,,
+Farm Service Agency,withdrawal,map,,Agriculture,Agriculture (350),other_mandatory,,CCC flows can be lumpy
+Veterans Affairs programs,withdrawal,map,,Veterans Affairs,Veterans (700),veterans_mixed,,Benefits mandatory; medical discretionary
+Veterans Benefits (EFT),withdrawal,map,,Veterans Affairs,Veterans (700),veterans_mandatory,,Shifts when 1st is non-business day
+Education Department programs,withdrawal,map,,Education,Education (500),education_mixed,,Student aid largely mandatory
+Housing and Urban Development programs,withdrawal,map,,Housing and Urban Development,Income Security (600),nondefence_discretionary,,
+Fed. Highway Administration programs,withdrawal,map,,Transportation,Transportation (400),nondefence_discretionary,,Trust-fund financed
+Federal Aviation Administration,withdrawal,map,,Transportation,Transportation (400),nondefence_discretionary,,
+Federal Salaries (EFT),withdrawal,pooled,,Multiple agencies,Multiple,nondefence_discretionary,,Cross-agency payroll; keep as own block
+Federal Employees Insurance Payments,withdrawal,map,,Office of Personnel Management,Income Security (600),federal_retirement,,
+Emergency Prep & Response (DHS),withdrawal,map,,Homeland Security,Community Dev (450),nondefence_discretionary,,FEMA; lumpy around disasters
+Transportation Security Admin. (DHS),withdrawal,map,,Homeland Security,Transportation (400),nondefence_discretionary,,
+Justice Department programs,withdrawal,map,,Justice,Administration of Justice (750),nondefence_discretionary,,
+Energy Department programs,withdrawal,map,,Energy,Energy (270),energy_mixed,,NNSA portion is defence
+NASA programs,withdrawal,map,,NASA,General Science (250),nondefence_discretionary,,
+GSA programs,withdrawal,map,,General Services Administration,General Government (800),nondefence_discretionary,,
+Postal Service Money Orders and Other,withdrawal,exclude,,Postal (off-budget),,excluded,,Off-budget
+Public Debt Cash Redemp. (Table IIIB),withdrawal,strip,,Financing,,financing,,Owned by issuance tracker
+Other Withdrawals,withdrawal,pooled,,Various,,other_outlays,,Footnoted; check materiality of one-offs
+Other Deposits,deposit,pooled,Various,,,other_revenue,,Footnoted; check materiality of one-offs
