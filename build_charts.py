@@ -114,6 +114,28 @@ def outlay_wedges():
     ]
 
 
+def outlay_facets():
+    o = pd.read_csv("recon_outlays.csv")
+    labels = {
+        "ssa": "Social Security Admin", "hhs": "HHS (Medicare, Medicaid...)",
+        "dod": "Defense", "treasury": "Treasury (incl. interest)",
+        "ed": "Education", "va": "Veterans Affairs",
+        "usda": "Agriculture", "dol": "Labor", "dot": "Transportation",
+        "dhs": "Homeland Security", "opm": "OPM",
+        "residual_all_other": "All other (pooled)",
+    }
+    facets = []
+    for b, label in labels.items():
+        g = o[o.bucket.eq(b)]
+        facets.append({
+            "key": b, "label": label,
+            "months": g["month"].tolist(),
+            "dts": (g["dts"] / 1e3).round(1).tolist(),
+            "mts": (g["mts"] / 1e3).round(1).tolist(),
+        })
+    return facets
+
+
 def mirror_series():
     o = pd.read_csv("recon_outlays.csv")
     ssa = o[o.bucket.eq("ssa")].set_index("month")["wedge"] / 1e3
@@ -182,6 +204,7 @@ DATA = {
     "deficit": deficit_series(),
     "attrib": attribution_series(),
     "receipts": receipts_facets(),
+    "outfacets": outlay_facets(),
     "outlays": outlay_wedges(),
     "mirror": mirror_series(),
     "cbo": cbo_rows(),
@@ -313,6 +336,19 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 </div>
 
 <div class="card">
+  <h2>Outlays, bucket by bucket</h2>
+  <p class="sub">DTS-built net outlays vs MTS net outlays per agency bucket, monthly. Social
+  Security, Agriculture, Labor and Transportation track tightly. HHS runs above MTS (withheld
+  premiums), Social Security below (same premiums &mdash; see the mirror card). Treasury is the
+  interest cash-vs-accrual gap: lumpy coupon months vs smooth accrual. Defense runs structurally
+  below MTS (civilian payroll and classified flows sit in the pooled lines). Education shows the
+  credit-reform spikes (Aug&nbsp;2023, Sep&nbsp;2025) that no cash series contains.</p>
+  <div class="legend" id="lg-of"></div>
+  <div class="facets" id="ch-of"></div>
+  <details><summary>Data table</summary><div class="tblwrap" id="tb-of"></div></details>
+</div>
+
+<div class="card">
   <h2>Outlay wedges by bucket, with their mechanisms</h2>
   <p class="sub">Total DTS&minus;MTS gap per outlay bucket over the window. Every large bar has
   a named accounting mechanism; none of them is a mis-keyed line. Treasury and the residual
@@ -324,10 +360,15 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 
 <div class="card">
   <h2>The premium mirror: SSA vs HHS monthly wedges</h2>
-  <p class="sub">Medicare Part&nbsp;B/D premiums are withheld from Social Security checks: the DTS
-  pays benefits net, the MTS records them gross and nets the premiums off Medicare instead. The
-  two wedges are near mirror images and mostly cancel in the total &mdash; evidence the mapping is
-  capturing real structure, not noise.</p>
+  <p class="sub">One retiree makes it concrete. Social Security owes them $2,000 and their $185
+  Medicare Part&nbsp;B premium is deducted before the check goes out. <b>Cash (DTS):</b> $1,815
+  leaves the Treasury account, all labelled Social Security; no premium cash ever moves on its
+  own. <b>Budget accounting (MTS):</b> a $2,000 Social Security outlay, and Medicare outlays
+  <em>reduced</em> by the $185 premium. Sum that over every beneficiary (~$15bn a month) and you
+  get the two lines below: DTS-built SSA runs below MTS by the withheld premiums (blue), and
+  DTS-built Medicare/HHS runs above MTS by the same premiums (orange). Two wedges, one mechanism,
+  cancelling at the total &mdash; which is how you know the mapping is capturing real structure,
+  not noise.</p>
   <div class="legend" id="lg-mir"></div>
   <div class="chart" id="ch-mir"></div>
   <details><summary>Data table</summary><div class="tblwrap" id="tb-mir"></div></details>
@@ -357,19 +398,22 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 </div>
 
 <div class="card">
-  <h2>The payoff: the seasonal model against four years of months</h2>
-  <p class="sub">The seasonal model &mdash; per-bucket shares from ten years of MTS Table&nbsp;9
-  history (median over FY2016&ndash;19 + FY2023&ndash;25, COVID excluded) <em>plus the
-  payment-calendar rule</em>: a month-start benefit block (Medicare capitation, VA, SSI,
-  military pay; $64bn in FY2023 growing to $89bn in FY2026, measured from the daily DTS) moves
-  into the prior month whenever the 1st lands on a weekend or Labor Day. Left of the divider:
-  reconstruction of FY2023&ndash;25 using each year&rsquo;s actual totals (mean |error| $53bn,
-  including credit-reform months no seasonal model can see). Right: the true test &mdash;
-  CBO&rsquo;s Feb&nbsp;2026 annual baseline split into months. Nine months validated:
-  <b>mean absolute error $30bn</b> on a $200bn mean actual, all nine signs right, zero bias.
-  The rule alone cut the error from $67bn: Oct&rsquo;s miss shrank from &minus;$148bn to
-  &minus;$59bn (the rest is the shutdown), Nov from +$134bn to +$45bn, Mar from +$126bn to
-  +$37bn. Remaining known gap: tariff-refund scenarios for customs.</p>
+  <h2>The payoff: the seasonal model, Oct&nbsp;2022 through Dec&nbsp;2027</h2>
+  <p class="sub">Per-bucket shares from ten years of MTS Table&nbsp;9 history (median over
+  FY2016&ndash;19 + FY2023&ndash;25, COVID excluded) plus the payment-calendar rule: a
+  month-start benefit block (Medicare capitation, VA, SSI, military pay; $64bn in FY2023,
+  extrapolated to ~$90bn+ ahead) moves into the prior month when the 1st lands on a weekend or
+  Labor Day. Left of the divider: in-sample reconstruction of FY2023&ndash;25 from each
+  year&rsquo;s actual totals (mean |error| $53bn, dominated by credit-reform months). Right:
+  CBO&rsquo;s baseline split into months &mdash; FY2026 scored <b>$30bn mean absolute error</b>
+  over the nine published months, all signs right, zero bias &mdash; then the true forecast
+  through FY2027 and calendar Q4&nbsp;2027 (FY2028 baseline). <b>Honest out-of-sample
+  yardstick:</b> leave-one-year-out cross-validation (shares from the other years only,
+  extrapolated calendar block) scores $17&ndash;40bn/month in ordinary years and ~$96bn in
+  FY2023 (debt ceiling + the student-loan reversal) &mdash; about 30% of the mean monthly
+  deficit overall, so read FY2026&rsquo;s 15% as the friendly end of that range. The forecast
+  months additionally carry CBO&rsquo;s own level risk (year-1 deficit RMSE &asymp; 0.7% of
+  GDP) and customs/tariff policy risk.</p>
   <div class="legend" id="lg-f26"></div>
   <div class="chart" id="ch-f26"></div>
   <details><summary>Data table</summary><div class="tblwrap" id="tb-f26"></div></details>
@@ -636,6 +680,19 @@ function drawAll(){
     height:150,endLabels:false}));
   table("tb-rc",["Month"].concat(D.receipts.flatMap(f=>[f.label+" DTS",f.label+" MTS"])),
     D.receipts[0].months.map((mm,i)=>[mLab(mm)].concat(D.receipts.flatMap(f=>[fmt(f.dts[i]),fmt(f.mts[i])]))));
+
+  legend("lg-of",[{name:"DTS-built",color:"--s1"},{name:"MTS net",color:"--s2"}]);
+  const of=document.getElementById("ch-of"); of.innerHTML="";
+  D.outfacets.forEach(f=>{
+    const d=document.createElement("div"); d.className="facet";
+    d.innerHTML=`<h3>${f.label}</h3><div class="chart" id="of-${f.key}"></div>`;
+    of.appendChild(d);
+  });
+  D.outfacets.forEach(f=>lineChart("of-"+f.key,{months:f.months,series:[
+    {name:"DTS",color:"--s1",values:f.dts},{name:"MTS",color:"--s2",values:f.mts}],
+    height:150,endLabels:false}));
+  table("tb-of",["Month"].concat(D.outfacets.flatMap(f=>[f.label+" DTS",f.label+" MTS"])),
+    D.outfacets[0].months.map((mm,i)=>[mLab(mm)].concat(D.outfacets.flatMap(f=>[fmt(f.dts[i]),fmt(f.mts[i])]))));
 
   hbarChart("ch-out",{rows:DATA.outlays,valueKey:"wedge",noteKey:"note",labelKey:"bucket"});
   table("tb-out",["Bucket","DTS $bn","MTS $bn","Wedge $bn","Mechanism"],

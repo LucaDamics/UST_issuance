@@ -33,6 +33,7 @@ the mapping or named, quantified, and understood.
 | MTS vs CBO historical actuals | ≤ **0.4%** in every category, FY2024 & FY2025 — the MTS→CBO hop is essentially free |
 | DTS-built vs CBO actuals | Medicaid −0.3%, Medicare net −2%, total receipts −2%; large gaps only where accounting differs by construction (net interest, premium withholding) |
 | FY2026 monthly split (the payoff) | mean absolute error **$30bn**/month on a $200bn mean actual over 9 published months, **9/9** surplus/deficit signs, zero bias (v2 shares + payment-calendar rule) |
+| Honest out-of-sample yardstick | leave-one-year-out CV over 7 held-out years: mean \|error\| **$43bn/month ≈ 30%** of the mean monthly deficit ($17–40bn in ordinary years; ~$96bn in FY2023, the debt-ceiling + student-loan-reversal year) |
 
 Interactive dashboard: `mapping_dashboard.html` (self-contained; open in a browser).
 
@@ -199,6 +200,26 @@ FICA** (stable within 0.50–0.58 over 11 years; non-withheld: 92.4% income vs S
 The share has real within-year seasonality (bonus season skews toward income tax) —
 use month-specific shares if CBO-category composition ever matters at monthly
 frequency. Output: `withheld_split_calibration.csv`.
+
+**How out-of-sample is the validation?** Candidly, in layers. The FY2023–25 segment
+of the payoff chart is in-sample fit (those years are in the profile and use their own
+actual totals). FY2026 is *shape*-out-of-sample (its months are not in the profile),
+but the CBO level was published mid-year, and design choices (median, year set,
+accrual interest) were made while watching the FY2026 scoreboard. The clean yardstick
+is the **leave-one-year-out cross-validation** in `seasonality_mts_history.py`:
+shares re-estimated from the other years only, applied to the held-out year's actual
+totals, with the calendar block *extrapolated* rather than measured on the held-out
+year. Result (`loyo_validation.csv`): $17–40bn/month in ordinary years, ~$96bn in
+FY2023 (debt ceiling + the Aug 2023 student-loan reversal), ~30% of the mean monthly
+deficit overall. FY2026's 15% should be read as the friendly end of that honest range.
+The same discipline is applied to the live projection: FY2026+ calendar blocks are
+extrapolated from pre-FY2026 measurements (the leak this closes was worth $0.2bn —
+immaterial, but now zero).
+
+The projection currently runs through **December 2027** (FY2027 baseline, then the
+first quarter of FY2028). Forecast months carry two risks on top of seasonal-shape
+error: CBO's own level risk (year-1 deficit RMSE ≈ 0.7% of GDP — `data/cbo_eval/`)
+and customs/tariff policy risk.
 
 Tariff-refund episodes (May–Jun 2026 customs) are policy events, handled as
 scenarios, not seasonality.

@@ -93,16 +93,17 @@ def share_profiles(monthly):
     return pd.DataFrame(shares).reindex(order)
 
 
-def project_fy2026(prof):
+def project_fy(prof, fy):
+    """Monthly split of CBO's baseline for one fiscal year."""
     cbo = pd.read_csv("cbo_projection_buckets.csv")
-    c = cbo[cbo.fy.eq(2026)].set_index(["side", "bucket"])["usd_mn"]
+    c = cbo[cbo.fy.eq(fy)].set_index(["side", "bucket"])["usd_mn"]
     annual = {("receipt", b): c.get(("receipt", b)) for b in RECEIPT_BUCKETS}
     for b in OUTLAY_BUCKETS:
         if b == "health_550":
             annual[("outlay", b)] = c.get(("outlay", "medicaid"), 0) + c.get(("outlay", "health_other"), 0)
         else:
             annual[("outlay", b)] = c.get(("outlay", b))
-    months = pd.period_range("2025-10", "2026-09", freq="M")
+    months = pd.period_range(f"{fy-1}-10", f"{fy}-09", freq="M")
     proj = pd.DataFrame(index=months)
     for key, a in annual.items():
         if a is None:
@@ -170,17 +171,80 @@ def shift_amounts_by_fy() -> dict:
     return {fy: float(pd.Series(v).median()) for fy, v in per_fy.items()}
 
 
-def apply_calendar_rule(deficit: pd.Series, amounts: dict) -> pd.Series:
+def block_for_fy(amounts: dict, fy: int) -> float:
+    """Measured block when available; otherwise extrapolate by median growth.
+
+    Extrapolation (not the target year's own measurement) is what keeps the
+    calendar rule honest out-of-sample: for FY2026 the extrapolated block is
+    ~$89.7bn vs $88.8bn measured - immaterial, but the principle matters.
+    """
+    fys = sorted(amounts)
+    growth = pd.Series([amounts[b] / amounts[a] for a, b in zip(fys, fys[1:])]).median() \
+        if len(fys) > 1 else 1.0
+    if fy in amounts:
+        return amounts[fy]
+    if fy > fys[-1]:
+        return amounts[fys[-1]] * growth ** (fy - fys[-1])
+    return amounts[fys[0]] * growth ** (fy - fys[0])  # backward for pre-DTS years
+
+
+def apply_calendar_rule(deficit: pd.Series, amounts: dict, honest_from: int = None) -> pd.Series:
+    """Shift the month-start block across boundaries with weekend/Labor-Day 1sts.
+
+    honest_from: first FY whose block must be extrapolated rather than measured
+    (out-of-sample discipline for validation).
+    """
     adj = deficit.copy()
     for m in adj.index:
         if not first_is_nonbusiness(m):
             continue
-        a = amounts.get(fy_of(m), amounts[max(amounts)])
+        fy = fy_of(m)
+        use = {k: v for k, v in amounts.items() if honest_from is None or k < honest_from} or amounts
+        a = block_for_fy(use, fy)
         adj[m] -= a  # the block leaves this month...
         prev = m - 1
         if prev in adj.index:
             adj[prev] += a  # ...and lands at the end of the prior one
     return adj
+
+
+def loyo_validation(monthly, amounts):
+    """Leave-one-year-out: shares from the other profile years, applied to the
+    held-out year's ACTUAL bucket totals, calendar rule with an extrapolated
+    (never same-year-measured) block. Isolates pure seasonal-shape skill."""
+    results = []
+    for held in PROFILE_FYS:
+        rest = [y for y in PROFILE_FYS if y != held]
+        fys = [fy_of(m) for m in monthly.index]
+        sub = monthly[[y in rest for y in fys]]
+        by_fy = [fy_of(m) for m in sub.index]
+        by_month = [m.month for m in sub.index]
+        shares = {}
+        for col in monthly.columns:
+            g = sub[col].groupby([by_fy, by_month]).sum().unstack(0)
+            prof = (g / g.sum()).median(axis=1)
+            shares[col] = prof / prof.sum()
+        prof = pd.DataFrame(shares).reindex([10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+        months = pd.period_range(f"{held-1}-10", f"{held}-09", freq="M")
+        totals = monthly[[m in set(months) for m in monthly.index]].sum()
+        fitted = pd.DataFrame(index=months)
+        for key in monthly.columns:
+            fitted[key] = [totals[key] * prof.loc[m.month, key] for m in months]
+        model = (fitted[[c for c in fitted.columns if c[0] == "outlay"]].sum(axis=1)
+                 - fitted[[c for c in fitted.columns if c[0] == "receipt"]].sum(axis=1))
+        model = apply_calendar_rule(model, amounts, honest_from=held)
+
+        actual = (monthly.xs("outlay", axis=1, level=0).sum(axis=1)
+                  - monthly.xs("receipt", axis=1, level=0).sum(axis=1)).reindex(months)
+        err = model - actual
+        results.append({
+            "fy": held, "mean_abs_err": err.abs().mean(),
+            "mean_abs_actual": actual.abs().mean(),
+            "err_pct_of_actual": err.abs().mean() / actual.abs().mean() * 100,
+            "signs_pct": (model.gt(0) == actual.gt(0)).mean() * 100,
+        })
+    return pd.DataFrame(results).set_index("fy")
 
 
 def history_fit(monthly, prof, fys):
@@ -217,7 +281,7 @@ def main():
     flat.to_csv("seasonality_shares_v2.csv")
     print(f"Profiles from {len(PROFILE_FYS)} fiscal years ({PROFILE_FYS}), median shares.")
 
-    v2 = project_fy2026(prof).round(0)
+    v2 = project_fy(prof, 2026).round(0)
     act = pd.read_csv("recon_deficit.csv")
     act["month"] = pd.PeriodIndex(act["month"], freq="M")
     v2["actual_mts_deficit"] = act.set_index("month")["mts_deficit"]
@@ -233,9 +297,22 @@ def main():
     print("Month-start payment block by FY (USD mn):",
           {k: f"{v:,.0f}" for k, v in sorted(amounts.items())})
 
+    # ---- honest out-of-sample check: leave-one-year-out ----
+    loyo = loyo_validation(monthly, amounts)
+    loyo.round(1).to_csv("loyo_validation.csv")
+    pd.set_option("display.float_format", lambda x: f"{x:,.0f}")
+    print("\nLeave-one-year-out validation (shares from the OTHER years, actual FY totals,")
+    print("extrapolated calendar block - pure out-of-sample seasonal shape):")
+    print(loyo.round(1).to_string())
+    print(f"LOYO overall: mean |error| {loyo.mean_abs_err.mean():,.0f} mn "
+          f"= {(loyo.mean_abs_err / loyo.mean_abs_actual).mean():.0%} of the mean |monthly deficit|")
+
     fit = history_fit(monthly, prof, [2023, 2024, 2025])
-    model = pd.concat([fit["model_deficit"], v2["proj_deficit"]])
-    model = apply_calendar_rule(model, amounts)
+    proj27 = project_fy(prof, 2027)["proj_deficit"].round(0)
+    proj28 = project_fy(prof, 2028)["proj_deficit"].round(0)
+    proj28 = proj28[proj28.index <= pd.Period("2027-12", "M")]
+    model = pd.concat([fit["model_deficit"], v2["proj_deficit"], proj27, proj28])
+    model = apply_calendar_rule(model, amounts, honest_from=2026)
 
     actual_hist = (monthly[("outlay", "nondefense_other")] * 0  # index frame
                    + monthly.xs("outlay", axis=1, level=0).sum(axis=1)

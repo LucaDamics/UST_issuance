@@ -3,7 +3,9 @@
     "allow": [
       "Bash(.venv/bin/python -)",
       "Bash(.venv/bin/python cbo_reconcile.py)",
-      "Bash(.venv/bin/python build_charts.py)"
+      "Bash(.venv/bin/python build_charts.py)",
+      "Bash(.venv/bin/python seasonality_mts_history.py)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --user-data-dir=/private/tmp/claude-501/-Users-lucadamico-UST-project/a46ad2c7-636e-43b3-b827-9f10503dee45/scratchpad/chrome-profile --screenshot=/private/tmp/claude-501/-Users-lucadamico-UST-project/a46ad2c7-636e-43b3-b827-9f10503dee45/scratchpad/dash_v6.png --window-size=1140,7600 --hide-scrollbars file:///Users/lucadamico/UST_project/mapping_dashboard.html)"
     ]
   }
 }
