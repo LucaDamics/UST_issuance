@@ -61,6 +61,17 @@ Outputs: `seasonality_monthly_shares.csv`, `dts_bucket_monthly.csv`,
    month-end coupon dates, Wednesday benefit cycles, the 15th corporate tax date) are
    visible in the cached daily DTS data - same bucket structure, finer calendar.
 
+## Update: seasonality v2 shipped (seasonality_mts_history.py)
+
+The "only two years of history" limitation is resolved without touching the old DTS
+format: MTS Table 9 (receipts by source, outlays by function) is format-stable back to
+Mar 2015. v2 profiles = per-bucket **median** month-of-FY share over FY2016-2019 +
+FY2023-2025 (COVID excluded; median damps one-off reestimate months), with interest on
+its MTS-accrual shape. FY2026 validation improves from mean |error| $98bn (8/9 signs)
+to **$67bn (9/9 signs, ~zero bias)**. The dashboard payoff card now shows v2. Division
+of labor: MTS history owns monthly shape; DTS owns intra-month shape for the
+weekly/daily layer. v1 (DTS-based) is kept in seasonality.py for comparison.
+
 ## US-CBO/eval-projections repo - verdict
 
 Useful, but for a different job: it quantifies CBO's own historical projection errors

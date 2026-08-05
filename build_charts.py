@@ -168,7 +168,7 @@ def cbo_pairs():
 
 
 def fy26_series():
-    s = pd.read_csv("fy2026_monthly_split.csv")
+    s = pd.read_csv("fy2026_monthly_split_v2.csv")  # v2: MTS 10-yr history shares
     return {
         "months": s["month"].tolist(),
         "proj": (s["proj_deficit"] / 1e3).round(1).tolist(),
@@ -356,13 +356,15 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
 
 <div class="card">
   <h2>The payoff: CBO&rsquo;s FY2026 deficit, split into months</h2>
-  <p class="sub">CBO&rsquo;s Feb&nbsp;2026 annual baseline distributed onto DTS-derived monthly
-  seasonality per bucket, against the MTS months published so far. Nine months validated:
-  mean absolute error $98bn on a $200bn mean actual, 8 of 9 surplus/deficit signs right.
-  The two big misses are known mechanisms, not noise: Oct/Nov&nbsp;2025 is the
-  Nov-1-on-a-Saturday benefit shift (the pair nets to &minus;$44bn), and May/Jun&nbsp;2026 is
-  IEEPA tariff refunds that a smooth annual customs number cannot see. A payment-calendar rule
-  is the v2 fix for the first; refund scenarios for the second.</p>
+  <p class="sub">CBO&rsquo;s Feb&nbsp;2026 annual baseline distributed onto monthly seasonality
+  per bucket, against the MTS months published so far. The shares come from ten years of MTS
+  Table&nbsp;9 history (median month-of-year profile over FY2016&ndash;19 and FY2023&ndash;25,
+  COVID years excluded). Nine months validated: mean absolute error $67bn on a $200bn mean
+  actual, all nine surplus/deficit signs right, near-zero bias. The first cut used only the two
+  complete DTS fiscal years and scored $98bn with a June sign miss &mdash; the longer history
+  and the accrual-shaped interest profile bought the difference. The remaining Oct/Nov error is
+  the Nov-1-on-a-Saturday benefit shift (the pair nets to small); a deterministic
+  payment-calendar rule is the next fix.</p>
   <div class="legend" id="lg-f26"></div>
   <div class="chart" id="ch-f26"></div>
   <details><summary>Data table</summary><div class="tblwrap" id="tb-f26"></div></details>
