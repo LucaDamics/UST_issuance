@@ -300,3 +300,17 @@ baseline still carries pre-ruling IEEPA tariff revenue; the refund wave is
 observable in the DTS at ~$100bn returned May–Jul 2026). That lever, future
 auction-size changes, and the TGA-target assumption are the three dials the
 model exposes.
+
+## Portfolio metrics: bill share and WAM (`issuance_projection.py`)
+
+History from exact per-CUSIP MSPD snapshots (quarterly, Mar 2015–Jun 2026):
+bills 11.6% of marketable debt in 2015 → 21.1% at Jun 2026; WAM 70.7 months.
+Forecast by evolving the same universe monthly: engine redemptions out, TBAC-size
+coupon issuance in at each tenor (held at provisional levels — Treasury's stated
+steady-coupon posture), bills moving with the solved net-bill path (Q3 2026
+bridged with Treasury's own $739bn borrowing plan). Under steady coupons the
+financing need lands on bills: **bill share drifts to ~24.5% by end-2027**
+(above TBAC's 15–20% guidance band) **and WAM shortens 70.7 → ~68.6 months**.
+The steady-coupon assumption is the explicit dial: raise 2027 auction sizes in
+`COUPON_SIZES` and both lines bend. Outputs: `issuance_metrics_hist.csv`,
+`issuance_metrics_fcst.csv`; dashboard card "Portfolio consequences".
