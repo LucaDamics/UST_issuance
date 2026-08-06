@@ -266,6 +266,23 @@ def issuance_series():
     }
 
 
+def issuance_volume_series():
+    m = pd.read_csv("monthly_issuance.csv")
+    mm = [pd.Period(x) for x in m[m.columns[0]]]
+    mlab = [f"{MONS[p.month-1]} '{str(p.year)[2:]}" for p in mm]
+    w = pd.read_csv("weekly_issuance.csv", parse_dates=["week_ending"])
+    wlab = [f"{MONS[d.month-1]} {d.day} '{str(d.year)[2:]}" for d in w["week_ending"]]
+    return {
+        "mlab": mlab,
+        "m_bills": m["gross_bills"].round(0).tolist(),
+        "m_coupons": m["coupon_settlements"].round(0).tolist(),
+        "m_net_bills": m["net_bills"].round(0).tolist(),
+        "wlab": wlab,
+        "w_total": w["total_gross"].round(0).tolist(),
+        "w_bills": w["gross_bills"].round(0).tolist(),
+    }
+
+
 def tga_series():
     t = pd.read_csv("tga_daily.csv")
     t["date"] = pd.to_datetime(t[t.columns[0]])
@@ -296,6 +313,7 @@ DATA = {
     "tga": tga_series(),
     "bills": bills_series(),
     "iss": issuance_series(),
+    "vol": issuance_volume_series(),
 }
 
 HTML = """<meta charset="utf-8">
@@ -589,6 +607,26 @@ footer{margin-top:36px;font-size:13px;color:var(--muted)}
   heavy issuance around quarter-opens and benefit-block weeks.</p>
   <div class="chart" id="ch-bills"></div>
   <details><summary>Data table (weekly bills)</summary><div class="tblwrap" id="tb-bills"></div></details>
+</div>
+
+<div class="card">
+  <h2>Total gross issuance, monthly and weekly</h2>
+  <p class="sub">The full supply calendar, made explicit in <code>auction_calendar.csv</code>: 619
+  forward auctions &mdash; official XML dates through Jan&nbsp;2027, rule-generated after
+  (mid-month group auctions the week before the 15th and settles on the 15th; end-month group
+  settles at EOM; TIPS/FRN/20-year on their cycles; bills weekly: 13/26-week Monday&rarr;Thursday,
+  4/6/8-week Tuesday&rarr;Thursday, 17-week Wednesday&rarr;Tuesday, 52-week every fourth week).
+  Gross bills come from the explicit ladder: each week issues its maturities plus the solved net
+  requirement, and what is issued at tenor T returns as a maturity T later. Monthly totals run
+  $2.7&ndash;3.6tn &mdash; ~$590bn/week of bills rolling plus ~$370bn/month of coupons on two
+  settlement days. The weekly view shows the settlement rhythm the repo desk lives with:
+  the mid-month and EOM coupon spikes on top of the steady bill roll.</p>
+  <div class="legend" id="lg-vm"></div>
+  <div class="chart" id="ch-vm"></div>
+  <p class="sub" style="margin-top:14px">Weekly gross issuance (USD bn): total and bills-only.</p>
+  <div class="legend" id="lg-vw"></div>
+  <div class="chart" id="ch-vw"></div>
+  <details><summary>Data table (monthly)</summary><div class="tblwrap" id="tb-vm"></div></details>
 </div>
 
 <div class="card">
@@ -1011,6 +1049,20 @@ function drawAll(){
     {name:"Cumulative",color:"--s3",values:D.dfc.cum,dashed:true}],height:300,rawX:true,endLabels:false});
   table("tb-df",["Week ending","Receipts $bn","Outlays $bn","Deficit $bn"],
     D.dfc.weekly.map(r=>[r[0],fmt(r[1]),fmt(r[2]),fmt(r[3])]));
+
+  legend("lg-vm",[{name:"Gross bills",color:"--s1",shape:"sq"},
+    {name:"Coupon settlements",color:"--s3",shape:"sq"},{name:"Net bills",color:"--ink",shape:"sq"}]);
+  groupedBars("ch-vm",{cats:D.vol.mlab,series:[
+    {name:"Gross bills",color:"--s1",values:D.vol.m_bills},
+    {name:"Coupons",color:"--s3",values:D.vol.m_coupons}],
+    dots:{name:"Net bills",values:D.vol.m_net_bills},height:280});
+  legend("lg-vw",[{name:"Total gross",color:"--s3"},{name:"Bills only",color:"--s1"}]);
+  lineChart("ch-vw",{months:D.vol.wlab,series:[
+    {name:"Total",color:"--s3",values:D.vol.w_total},
+    {name:"Bills",color:"--s1",values:D.vol.w_bills}],
+    height:220,rawX:true,endLabels:false});
+  table("tb-vm",["Month","Gross bills $bn","Coupons $bn","Net bills $bn"],
+    D.vol.mlab.map((l,i)=>[l,fmt(D.vol.m_bills[i]),fmt(D.vol.m_coupons[i]),fmt(D.vol.m_net_bills[i])]));
 
   legend("lg-iss",[{name:"Actual (MSPD)",color:"--s1"},{name:"Forecast",color:"--s3"}]);
   lineChart("ch-iss-share",{months:D.iss.labels,series:[
