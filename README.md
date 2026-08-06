@@ -269,3 +269,34 @@ multiples); outlay wedges with named mechanisms; the SSA/HHS premium mirror; DTS
 fiscal years vs CBO actuals (dumbbells); FY2025 deviation-from-CBO; and the FY2026
 projected-vs-actual monthly path. Light/dark themes; every chart has hover tooltips
 and a data-table twin.
+
+## The issuance side: CUSIP engine, TGA path, net bills (the residual)
+
+`issuance_engine.py` builds security-level cash-flow calendars from the MSPD
+detail (Jun 2026) + auction data + SOMA holdings (NY Fed, per CUSIP — Fed-held
+maturities roll at auction, so no cash): **coupon interest** (semiannual per
+CUSIP; TIPS on adjusted par held flat; FRNs quarterly at the latest 13-week
+rate), **public redemptions**, and **forward auction settlements** from the
+official Aug 2026 refunding XML calendar + TBAC recommended sizes (held at
+provisional levels beyond Jan 2027; new-issue coupons from latest auction
+yields rounded to 1/8). Validation is hard: engine coupons vs the DTS daily
+interest line land within ±7% on every major pay date (residual = savings-bond/
+SLGS interest the engine excludes by design). Calendar conventions encoded and
+verified: EOM securities pay on mirror-month ends; weekend dates shift to the
+next Fed business day; no coupon on an issue date.
+
+`tga_bills_model.py` closes the financing identity daily (Oct 2026–Dec 2027):
+TGA moves with the primary deficit (daily model minus its accrual-interest
+bucket — the cash/accrual interest wedge resolves here), engine coupon flows,
+Treasury's stated other means of financing (−$81bn/qtr, credit financing
+accounts, from the Aug 2026 Sources & Uses), and **net bills solved as the
+weekly Thursday residual** gliding the TGA to Treasury's own anchors ($950bn
+end-Sep 2026 → $850bn end-Dec 2026, held flat after). Outputs `tga_daily.csv`
+and `bills_weekly.csv`. FY2027 net bills: ~$747bn.
+
+Cross-check against Treasury's Aug 2026 Sources & Uses: our Q4 2026 cash need
+$572bn vs their $646bn — the gap is the **customs scenario** (CBO's Feb 2026
+baseline still carries pre-ruling IEEPA tariff revenue; the refund wave is
+observable in the DTS at ~$100bn returned May–Jul 2026). That lever, future
+auction-size changes, and the TGA-target assumption are the three dials the
+model exposes.
