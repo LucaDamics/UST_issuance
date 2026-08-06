@@ -231,15 +231,23 @@ intra-month shape** (mid-month/month-end coupon dates, Wednesday benefit cycles,
 ## Known limitations / roadmap
 
 1. ~~Payment-calendar rule~~ — **done** (v2.1, above).
-2. **Weekly/daily disaggregation** — descriptive layer done: `intramonth_profiles.py`
-   builds the cumulative daily deficit path by business day (tax months vs regular
-   months, with interquartile bands) and the week-of-month receipts/outlays rhythm
-   from the daily DTS (`daily_profile.csv`, `weekly_profile.csv`; two dashboard
-   cards). Below monthly frequency there is no external benchmark — the DTS *is* the
-   primary source — so the honesty devices are the IQR bands, the regime split, and
-   the constraint that the daily paths sum to the MTS-reconciled month totals.
-   Still open: turning the profiles into a forecast-grade daily model (per-bucket
-   daily shares + the settlement/coupon calendar).
+2. ~~Weekly/daily disaggregation~~ — **done**, two layers. Descriptive:
+   `intramonth_profiles.py` (average daily/weekly profiles with IQR bands, tax vs
+   regular months). Forecast-grade: **`daily_model.py`** — a *dated* daily model,
+   not an average month. Each business day is classified by day type (BD1–3 benefit
+   block, the day covering the 15th, 2nd/3rd/4th Wednesdays, last two days, shifted
+   variants when the 1st is non-business, else day-of-week), and each bucket learns
+   its share of the month landing on each day type. Walk-forward validation on the
+   nine held-out FY2026 months of daily actuals (this layer *does* have a
+   benchmark): daily deficit MAE **$12bn vs $21bn** uniform baseline; within-month
+   cumulative path $34bn vs $52bn; weekly $34bn vs $56bn. Outputs the operational
+   TGA/bills inputs: `daily_forecast.csv` (379 dated business days, Jul 2026–Dec
+   2027, receipts/outlays/deficit/cumulative) and `weekly_forecast.csv`. The dated
+   texture is real: Feb 1 and Nov 1 2027 are ~$100bn benefit-block days, Sep 15
+   quarterly taxes swing months positive, and Jul 30 2027 carries August's block
+   because Aug 1 is a Sunday. Calendar find, verified against history: the DTS
+   follows **Fed banking days** (Saturday holidays are not observed on Friday;
+   generated calendar matches all 40 observed months exactly).
 3. **Interest accrual-vs-cash routing**: the projected deficit uses accrual interest;
    when the issuance tracker is attached, the bill-discount component moves to the
    financing identity explicitly.
